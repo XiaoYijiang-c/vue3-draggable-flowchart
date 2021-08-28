@@ -1,6 +1,5 @@
 <template>
   <el-dialog title="流程数据信息" v-model="dataBase.dialogVisible" width="70%">
-    <!--一个高亮显示的插件-->
     <div>{{ JSON.stringify(this.data, null, 4).toString() }}</div>
     <span class="dialog-footer"> </span>
   </el-dialog>

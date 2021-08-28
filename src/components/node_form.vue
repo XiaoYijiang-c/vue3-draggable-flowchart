@@ -1,9 +1,5 @@
 <template>
-  <el-dialog
-    title="文件上传"
-    :close-on-click-modal="false"
-    v-model="dataBase.visible"
-  >
+  <el-dialog title="文件上传" :close-on-click-modal="false" :model-value="win">
     <el-form :model="node" ref="dataForm" label-width="80px" id="upload">
       <el-form-item label="名称">
         <el-radio v-model="dataEncodingType" label="dict">dict</el-radio>
@@ -36,29 +32,15 @@ import $ from "jquery";
 import { ElMessage } from "element-plus";
 export default defineComponent({
   name: "node_from",
-  emits: ["change"],
-  setup(props, context) {
-    const node = ref();
-    const dataBase = reactive({
-      visible: false,
-      node: {},
-    });
+
+  setup() {
     const FILE = reactive({
       file: {},
       fileName: "",
       fileContent: "",
     });
-    function init(data, id) {
-      dataBase.visible = true;
-      data.nodeList.filter((node) => {
-        if (node.id === id) {
-          dataBase.node = node;
-        }
-      });
-    }
-    function change() {
-      context.emit("change");
-    }
+    function init() {}
+
     function uploadFile() {
       var formData = new FormData($("#upload")[0]);
       ElMessage({
@@ -118,7 +100,7 @@ export default defineComponent({
       FILE,
       uploadFile,
       init,
-      change,
+
       fileInfo,
       getFileContent,
     };

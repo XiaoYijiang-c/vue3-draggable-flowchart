@@ -31,20 +31,88 @@
                   v-show="node.show"
                   :id="node.id"
                   :node="node"
-                  @deleteNode="deleteNode"
+                  @deleteNode="deleteNode(node)"
                   @changeNodeSite="changeNodeSite"
                   @editNode="editNode(node)"
                 >
                 </flow-node>
-
-                <!-- <chart v-if="list.nodeFormVisible" ref="chart"></chart> -->
               </template>
               <div v-for="window in list.data.windowList" :key="window.wid">
-                <flow-node-form
-                  v-show="window.nodeFormVisible"
-                  ref="nodeForm"
-                  @change="change"
-                ></flow-node-form>
+                <el-dialog
+                  title="提示"
+                  v-model="window.nodeFormVisible"
+                  width="50%"
+                  :before-close="handleClose"
+                  v-if="window.type === 'txt'"
+                >
+                  <el-form
+                    :model="node"
+                    ref="dataForm"
+                    label-width="80px"
+                    id="upload"
+                    @change="computeSize(window)"
+                  >
+                    <el-form-item label="编码类型">
+                      <el-radio v-model="window.dataEncodingType" label="dict"
+                        >dict</el-radio
+                      >
+                      <el-radio v-model="window.dataEncodingType" label="oneHot"
+                        >oneHot</el-radio
+                      >
+                    </el-form-item>
+                    <el-form-item
+                      label="数据类型"
+                      v-if="window.dataEncodingType === 'oneHot'"
+                    >
+                      <el-radio v-model="window.dataType" label="DNA"
+                        >DNA</el-radio
+                      >
+                      <el-radio v-model="window.dataType" label="RNA"
+                        >RNA</el-radio
+                      >
+                      <el-radio v-model="window.dataType" label="protein"
+                        >protein</el-radio
+                      >
+                    </el-form-item>
+                    <el-form-item label="Spclen">
+                      <el-input
+                        v-model="window.input"
+                        placeholder="请输入内容"
+                        type="number"
+                      ></el-input>
+                    </el-form-item>
+                    <el-form-item label="矩阵维度"
+                      >{{ window.size }}
+                    </el-form-item>
+                    <el-form-item label="文件上传">
+                      <input
+                        type="file"
+                        name="file"
+                        accept=".txt"
+                        :id="window.wid"
+                        class="file"
+                        @change="fileInfo(getFileContent, window)"
+                      />{{ window.FILE.fileName }}
+                    </el-form-item>
+                    <el-form-item label="文件内容">
+                      <el-scrollbar height="100px">{{
+                        window.FILE.fileContent
+                      }}</el-scrollbar>
+                    </el-form-item>
+                  </el-form>
+                  <template #footer>
+                    <span class="dialog-footer">
+                      <el-button @click="window.nodeFormVisible = false"
+                        >取 消</el-button
+                      >
+                      <el-button
+                        type="primary"
+                        @click="window.nodeFormVisible = false"
+                        >确 定</el-button
+                      >
+                    </span>
+                  </template>
+                </el-dialog>
               </div>
             </div>
           </el-col>
@@ -67,7 +135,7 @@ import { ElMessage } from "element-plus";
 import flowNode from "@/components/node";
 import flowTool from "@/components/tool";
 import FlowInfo from "@/components/info";
-import FlowNodeForm from "./node_form";
+// import FlowNodeForm from "./node_form";
 // import chart from "./chart";
 import lodash from "lodash";
 import { getDataA } from "./data_A";
@@ -77,16 +145,70 @@ export default defineComponent({
     flowNode,
     flowTool,
     FlowInfo,
-    FlowNodeForm,
+    // FlowNodeForm,
     // chart,
   },
   setup() {
+    function computeSize(window) {
+      if (window.dataEncodingType === "dict") {
+        window.size = window.input;
+      } else if (window.dataEncodingType === "oneHot") {
+        if (window.dataType === "DNA" || window.dataType === "RNA") {
+          window.size = window.input * 4;
+        } else if (window.dataType === "protein") {
+          window.size = window.input * 20;
+        }
+      }
+    }
+    function fileInfo(callback, window) {
+      // 获取input标签选择的文件,并选择第一条
+
+      let resultFile = document.getElementById(window.wid).files[0];
+      console.log(window.wid);
+      // 如果文件存在
+
+      if (resultFile) {
+        // 获取文件信息
+        window.FILE.file = resultFile;
+        // 获取文件名
+        window.FILE.fileName = resultFile.name;
+
+        // 使用 FileReader 来读取文件
+        let reader = new FileReader();
+
+        // 读取纯文本文件,且编码格式为 utf-8
+        reader.readAsText(resultFile, "UTF-8");
+
+        // 读取文件,会触发 onload 异步事件,可使用回调函数 来获取最终的值.
+        reader.onload = function (e) {
+          let fileContent = e.target.result;
+
+          // 若为回调函数,则触发回调事件
+          if (callback && typeof callback === "function") {
+            callback(fileContent, window);
+          }
+        };
+      }
+    }
+    function getFileContent(fileContent, window) {
+      window.FILE.fileContent = fileContent;
+    }
+    const handleClose = (done) => {
+      ElMessageBox.confirm("确认关闭？")
+        .then(() => {
+          done();
+        })
+        .catch(() => {
+          // catch
+        });
+    };
+
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const nodeForm = ref();
     const chart = ref(null);
     const nodes = ref(null);
-
+    const INDEX = ref(0);
     const list = reactive({
       lineList: [],
       nodeList: [],
@@ -165,15 +287,7 @@ export default defineComponent({
         dataReloadA();
       });
     });
-    function change(node) {
-      for (let cnt = 0; cnt < list.data.nodeList.length; cnt++) {
-        if (node.wid === list.data.windowList[cnt].wid) {
-          list.data.windowList[cnt].nodeFormVisible = true;
-          console.log(list.data.windowList[cnt]);
-          break;
-        }
-      }
-    }
+
     function loadEasyFlow() {
       for (var i = 0; i < list.data.nodeList.length; i++) {
         let node = list.data.nodeList[i];
@@ -333,6 +447,7 @@ export default defineComponent({
     }
     function addNode(evt, nodeMenu, mousePosition) {
       console.log("添加节点", evt, nodeMenu);
+
       let width = flowTool.value.$el.clientWidth;
       const index = list.index++;
       let nodeId = "node" + index;
@@ -358,12 +473,22 @@ export default defineComponent({
       };
       var window = {
         wid: index,
+        type: nodeMenu.type,
         nodeFormVisible: false,
+        dataEncodingType: ref(null),
+        dataType: ref(null),
+        FILE: reactive({
+          file: {},
+          fileName: "",
+          fileContent: "",
+        }),
+        input: ref(0),
+        size: ref(),
       };
       list.data.windowList.push(window);
 
       list.data.nodeList.push(node);
-
+      INDEX.value++;
       // list.data = { 1: "1", 2: "2" };
       nextTick(() => {
         allJsPlumb.jsPlumb.makeSource(nodeId, allJsPlumb.jsplumbSourceOptions);
@@ -375,8 +500,8 @@ export default defineComponent({
         });
       });
     }
-    function deleteNode(nodeId) {
-      ElMessageBox("确定要删除节点" + nodeId + "?", "提示", {
+    function deleteNode(Node) {
+      ElMessageBox("确定要删除节点" + Node.id + "?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
@@ -384,11 +509,15 @@ export default defineComponent({
       })
         .then(() => {
           list.data.nodeList = list.data.nodeList.filter((node) => {
-            return node.id !== nodeId;
+            return node.id !== Node.id;
           });
+          list.data.windowList = list.data.windowList.filter((window) => {
+            return window.wid !== Node.wid;
+          });
+          INDEX.value--;
           nextTick(() => {
-            console.log("删除" + nodeId);
-            allJsPlumb.jsPlumb.removeAllEndpoints(nodeId);
+            console.log("删除" + Node.id);
+            allJsPlumb.jsPlumb.removeAllEndpoints(Node.id);
           });
         })
         .catch(() => {});
@@ -398,22 +527,9 @@ export default defineComponent({
       console.log("编辑节点", nodeForm.value, chart.value);
       for (var cnt = 0; cnt < list.data.nodeList.length; cnt++) {
         if (node.wid === list.data.windowList[cnt].wid) {
-          // console.log(list.data.windowList[cnt]);
-          // list.data.windowList[cnt].nodeFormVisible = true;
-          // console.log(list.data.windowList[cnt]);
+          list.data.windowList[cnt].nodeFormVisible = true;
           break;
         }
-      }
-
-      if (node.type === "txt") {
-        nextTick(() => {
-          nodeForm.value.node = node.id;
-          nodeForm.value.init(list.data, node.id);
-        });
-      } else if (node.type === "list") {
-        nextTick(() => {
-          chart.value.init(list.data, node.id);
-        });
       }
     }
     function dataInfo() {
@@ -446,6 +562,9 @@ export default defineComponent({
     }
 
     return {
+      fileInfo,
+      getFileContent,
+      handleClose,
       list,
       nodes,
       nodeForm,
@@ -453,13 +572,14 @@ export default defineComponent({
       flowInfo,
       chart,
       isMAT,
-      change,
+      computeSize,
       changeNodeSite,
       addNode,
       deleteNode,
       editNode,
       dataInfo,
       dataReloadA,
+      dataEncodingType: ref(null),
     };
   },
 });
