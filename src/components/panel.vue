@@ -448,7 +448,13 @@ export default defineComponent({
                 (node1.type === "txt" && node2.type === "csv") ||
                 (node1.type === "csv" && node2.type === "txt") ||
                 (node1.type === "txt" && node2.type === "txt") ||
-                (node1.type === "csv" && node2.type === "csv")
+                (node1.type === "csv" && node2.type === "csv") ||
+                (node1.type === "txt" && node2.type === "col") ||
+                (node1.type === "col" && node2.type === "txt") ||
+                (node1.type === "txt" && node2.type === "row") ||
+                (node1.type === "txt" && node2.type === "col") ||
+                (node1.type === "row" && node2.type === "col") ||
+                (node1.type === "col" && node2.type === "row")
               ) {
                 return true;
               }
@@ -716,7 +722,7 @@ export default defineComponent({
     ),
     linear-gradient(rgba(0, 0, 0, 0.15) 10%, rgba(0, 0, 0, 0) 10%); */
   background-size: 10px 10px;
-  height: 500px;
+  /* height: 900px; */
   background-color: rgb(251, 251, 251);
   /*background-color: #42b983;*/
   position: relative;
