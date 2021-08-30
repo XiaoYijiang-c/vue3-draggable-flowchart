@@ -323,7 +323,7 @@ export default defineComponent({
     const flowInfo = ref(null);
     const nodeForm = ref();
     const chart = ref(null);
-    const nodes = ref(null);
+    const nodes = ref();
     const INDEX = ref(0);
     const list = reactive({
       lineList: [],
@@ -554,8 +554,6 @@ export default defineComponent({
       for (var i = 0; i < list.data.nodeList.length; i++) {
         let node = list.data.nodeList[i];
         if (node.id === data.nodeId) {
-          console.log("data", data);
-          console.log("nodes", nodes.value.Node);
           node.left = data.left;
           node.top = data.top;
         }
@@ -567,8 +565,8 @@ export default defineComponent({
       let width = flowTool.value.$el.clientWidth;
       const index = list.index++;
       let nodeId = "node" + index;
-      var left = mousePosition.left;
-      var top = mousePosition.top;
+      var left = evt.originalEvent.clientX;
+      var top = evt.originalEvent.clientY;
 
       if (mousePosition.left < 0) {
         left = evt.originalEvent.layerX - width;
@@ -576,7 +574,9 @@ export default defineComponent({
       if (mousePosition.top < 0) {
         top = evt.originalEvent.clientY - 50;
       }
-
+      //居中
+      left -= 100;
+      top -= 25;
       var node = {
         id: "node" + index,
         wid: index,
@@ -603,11 +603,14 @@ export default defineComponent({
         size: ref(),
       };
       list.data.windowList.push(window);
-
+      // console.log(nodes.value);
       list.data.nodeList.push(node);
       INDEX.value++;
       // list.data = { 1: "1", 2: "2" };
       nextTick(() => {
+        nodes.value.nodes.style.left = node.left;
+        nodes.value.nodes.style.top = node.top;
+        console.log(typeof node.top);
         allJsPlumb.jsPlumb.makeSource(nodeId, allJsPlumb.jsplumbSourceOptions);
 
         allJsPlumb.jsPlumb.makeTarget(nodeId, allJsPlumb.jsplumbTargetOptions);
@@ -617,6 +620,7 @@ export default defineComponent({
         });
       });
     }
+
     function deleteNode(Node) {
       ElMessageBox("确定要删除节点" + Node.id + "?", "提示", {
         confirmButtonText: "确定",

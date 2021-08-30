@@ -1,7 +1,14 @@
 <template>
+  <!-- <div
+    ref="nodes"
+    :style="[flowNodeContainer1, { top: node.top, left: node.left }]"
+    @mouseenter="showDelete"
+    @mouseleave="hideDelete"
+    @mouseup="changeNodeSite"
+  > -->
   <div
-    ref="Node"
-    :style="(flowNodeContainer, sNode)"
+    ref="nodes"
+    :style="flowNodeContainer1"
     @mouseenter="showDelete"
     @mouseleave="hideDelete"
     @mouseup="changeNodeSite"
@@ -24,9 +31,7 @@
       </div>
     </div>
     <!--节点的正文部分-->
-    <div class="flow-node-body">
-      {{ node.name }}
-    </div>
+    <div class="flow-node-body">{{ node.name }}</div>
   </div>
 </template>
 <script>
@@ -35,15 +40,15 @@ export default defineComponent({
   name: "node",
   props: { node: Object },
   setup(props, context) {
-    // const flowNodeContainer = reactive();
-    const mouseEnter = ref();
-    const Node = ref(null);
-    const sNode = reactive({
+    const flowNodeContainer1 = reactive({
       position: "absolute",
       width: "200px",
-      top: props.node.top,
-      left: props.node.left,
+      // top: props.top,
+      // left: props.left,
     });
+    const mouseEnter = ref();
+    const nodes = ref(null);
+
     const nodeClass = computed(() => {
       var nodeclass = {};
       nodeclass[props.node.ico] = true;
@@ -69,17 +74,19 @@ export default defineComponent({
     function changeNodeSite() {
       //   避免抖动;
       if (
-        props.node.left == Node.value.style.left &&
-        props.node.top == Node.value.style.top
+        props.node.left == nodes.value.style.left &&
+        props.node.top == nodes.value.style.top
       ) {
         return;
       }
-      sNode.left = Node.value.style.left;
-      sNode.top = Node.value.style.top;
+      console.log("props.node.id", props.node.id);
+      // flowNodeContainer1.left = nodes.value.style.left;
+      // flowNodeContainer1.top = nodes.value.style.top;
+
       context.emit("changeNodeSite", {
         nodeId: props.node.id,
-        left: sNode.left,
-        top: sNode.top,
+        left: nodes.value.style.left,
+        top: nodes.value.style.top,
       });
 
       // flowNodeContainer.top = Node.value.style.top;
@@ -90,8 +97,8 @@ export default defineComponent({
         boxShadow: mouseEnter.value ? "#66a6e0 0px 0px 12px 0px" : "",
         backgroundColor: "transparent",
       },
-      Node,
-      sNode,
+      flowNodeContainer1,
+      nodes,
       nodeClass,
       deleteNode,
       editNode,
