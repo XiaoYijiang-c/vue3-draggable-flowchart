@@ -80,7 +80,7 @@ export default defineComponent({
           children: [
             {
               type: "list",
-              name: "列表",
+              name: "Data Table",
               ico: "el-icon-caret-right",
             },
             {

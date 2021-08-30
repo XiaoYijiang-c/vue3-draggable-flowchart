@@ -38,25 +38,32 @@
                 </flow-node>
               </template>
               <div v-for="window in list.data.windowList" :key="window.wid">
+                <!-- v-if="window.type === 'txt'" -->
                 <el-dialog
                   title="提示"
                   v-model="window.nodeFormVisible"
                   width="50%"
                   :before-close="handleClose"
-                  v-if="window.type === 'txt'"
+                  v-if="window.type === 'txt' || window.type === 'csv'"
                 >
                   <el-form
                     :model="node"
                     ref="dataForm"
                     label-width="80px"
-                    id="upload"
+                    :id="'form' + window.wid"
                     @change="computeSize(window)"
                   >
                     <el-form-item label="编码类型">
-                      <el-radio v-model="window.dataEncodingType" label="dict"
+                      <el-radio
+                        v-model="window.dataEncodingType"
+                        label="dict"
+                        name="dataEncodingType"
                         >dict</el-radio
                       >
-                      <el-radio v-model="window.dataEncodingType" label="oneHot"
+                      <el-radio
+                        v-model="window.dataEncodingType"
+                        label="oneHot"
+                        name="dataEncodingType"
                         >oneHot</el-radio
                       >
                     </el-form-item>
@@ -64,13 +71,22 @@
                       label="数据类型"
                       v-if="window.dataEncodingType === 'oneHot'"
                     >
-                      <el-radio v-model="window.dataType" label="DNA"
+                      <el-radio
+                        v-model="window.dataType"
+                        label="DNA"
+                        name="dataType"
                         >DNA</el-radio
                       >
-                      <el-radio v-model="window.dataType" label="RNA"
+                      <el-radio
+                        v-model="window.dataType"
+                        label="RNA"
+                        name="dataType"
                         >RNA</el-radio
                       >
-                      <el-radio v-model="window.dataType" label="protein"
+                      <el-radio
+                        v-model="window.dataType"
+                        label="protein"
+                        name="dataType"
                         >protein</el-radio
                       >
                     </el-form-item>
@@ -78,9 +94,17 @@
                       <el-input
                         v-model="window.input"
                         placeholder="请输入内容"
+                        name="Spclen"
                         type="number"
                       ></el-input>
+                      <el-input
+                        type="hidden"
+                        name="node-id"
+                        v-model="window.id"
+                        id="hiddenInput"
+                      ></el-input>
                     </el-form-item>
+
                     <el-form-item label="矩阵维度"
                       >{{ window.size }}
                     </el-form-item>
@@ -92,10 +116,20 @@
                         :id="window.wid"
                         class="file"
                         @change="fileInfo(getFileContent, window)"
-                      />{{ window.FILE.fileName }}
+                        v-if="window.type === 'txt'"
+                      />
+                      <input
+                        type="file"
+                        name="file"
+                        accept=".csv"
+                        :id="window.wid"
+                        class="file"
+                        @change="fileInfo(getFileContent, window)"
+                        v-else-if="window.type === 'csv'"
+                      />
                     </el-form-item>
                     <el-form-item label="文件内容">
-                      <el-scrollbar height="100px">{{
+                      <el-scrollbar id="scrollbar" height="100px">{{
                         window.FILE.fileContent
                       }}</el-scrollbar>
                     </el-form-item>
@@ -107,11 +141,36 @@
                       >
                       <el-button
                         type="primary"
-                        @click="window.nodeFormVisible = false"
+                        @click="
+                          (window.nodeFormVisible = false), uploadFiles(window)
+                        "
                         >确 定</el-button
                       >
                     </span>
                   </template>
+                </el-dialog>
+                <!-- v-if="window.type === 'list'" -->
+                <el-dialog
+                  title="收货地址"
+                  v-model="window.nodeFormVisible"
+                  v-else-if="window.type === 'list'"
+                >
+                  <el-table :data="state.gridData">
+                    <el-table-column
+                      property="date"
+                      label="日期"
+                      width="150"
+                    ></el-table-column>
+                    <el-table-column
+                      property="name"
+                      label="姓名"
+                      width="200"
+                    ></el-table-column>
+                    <el-table-column
+                      property="address"
+                      label="地址"
+                    ></el-table-column>
+                  </el-table>
                 </el-dialog>
               </div>
             </div>
@@ -128,13 +187,21 @@
   </div>
 </template>
 <script>
-import { defineComponent, reactive, onMounted, nextTick, ref } from "vue";
+import {
+  defineComponent,
+  reactive,
+  onMounted,
+  nextTick,
+  ref,
+  getCurrentInstance,
+} from "vue";
 import { jsPlumb } from "jsplumb";
 import { ElMessageBox } from "element-plus";
 import { ElMessage } from "element-plus";
 import flowNode from "@/components/node";
 import flowTool from "@/components/tool";
 import FlowInfo from "@/components/info";
+import $ from "jquery";
 // import FlowNodeForm from "./node_form";
 // import chart from "./chart";
 import lodash from "lodash";
@@ -149,14 +216,63 @@ export default defineComponent({
     // chart,
   },
   setup() {
+    const { proxy } = getCurrentInstance(); // 获取上下文对象
+    function uploadFiles(window) {
+      var formData = new FormData($("#form" + window.wid)[0]);
+      console.log("formData", window.wid);
+      // proxy.$axios
+      //   .post("/playlist/hot", formData) // 网络请求
+      //   .then((result) => {
+      //     console.log(result);
+      //   })
+      //   .catch(() => {
+      //     /* */
+      //   });
+      $.ajax({
+        type: "post",
+        url: "http://127.0.0.1:8081",
+        data: formData,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function () {
+          // let jsonData = JSON.parse(data);
+          // console.log("jsonData.tag", jsonData.tag);
+        },
+      });
+    }
+    const state = reactive({
+      gridData: [
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+      ],
+    });
     function computeSize(window) {
       if (window.dataEncodingType === "dict") {
-        window.size = window.input;
+        window.size = String(window.input) + "*1";
       } else if (window.dataEncodingType === "oneHot") {
         if (window.dataType === "DNA" || window.dataType === "RNA") {
-          window.size = window.input * 4;
+          window.size = String(window.input) + "* 4";
         } else if (window.dataType === "protein") {
-          window.size = window.input * 20;
+          window.size = String(window.input) + "* 20";
         }
       }
     }
@@ -472,6 +588,7 @@ export default defineComponent({
         show: true,
       };
       var window = {
+        id: "node" + index,
         wid: index,
         type: nodeMenu.type,
         nodeFormVisible: false,
@@ -562,6 +679,7 @@ export default defineComponent({
     }
 
     return {
+      state,
       fileInfo,
       getFileContent,
       handleClose,
@@ -580,6 +698,7 @@ export default defineComponent({
       dataInfo,
       dataReloadA,
       dataEncodingType: ref(null),
+      uploadFiles,
     };
   },
 });
@@ -610,5 +729,16 @@ export default defineComponent({
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+#scrollbar {
+  width: 600px;
+}
+
+#hiddenInput {
+  float: left;
+  z-index: -1;
+  /* width: 0px;
+  height: 0px; */
 }
 </style>

@@ -5,7 +5,7 @@
   </el-dialog>
 </template>
 <script>
-import { defineComponent, reactive } from "vue";
+import { defineComponent, reactive, getCurrentInstance, onMounted } from "vue";
 // import { codemirror } from "vue-codemirror";
 import "codemirror/lib/codemirror.css";
 require("codemirror/mode/javascript/javascript.js");
@@ -17,7 +17,7 @@ export default defineComponent({
   props: {
     data: Object,
   },
-  setup() {
+  setup(props) {
     const dataBase = reactive({
       dialogVisible: false,
       options: {
@@ -25,16 +25,26 @@ export default defineComponent({
         lineNumbers: true,
       },
     });
-    // function flowData() {
-    //   console.log("this.data", this.data);
-    //   return JSON.stringify(this.data, null, 4).toString();
-    // }
+
     function init() {
       console.log("this.data", this.data);
       dataBase.dialogVisible = true;
+      uploadData();
     }
+    const { proxy } = getCurrentInstance(); // 获取上下文对象
+    function uploadData() {
+      proxy.$axios
+        .post("/playlist/hot", JSON.stringify(props.data, null, 4)) // 网络请求
+        .then((result) => {
+          console.log(result);
+        })
+        .catch(() => {
+          /* */
+        });
+    }
+
     return {
-      // flowData,
+      uploadData,
       dataBase,
       init,
     };
