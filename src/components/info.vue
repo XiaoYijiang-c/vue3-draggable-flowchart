@@ -1,42 +1,39 @@
 <template>
-  <el-dialog title="流程数据信息" v-model="dataBase.dialogVisible" width="70%">
-    <div>{{ JSON.stringify(this.data, null, 4).toString() }}</div>
-    <span class="dialog-footer"> </span>
-  </el-dialog>
+  <div></div>
 </template>
 <script>
-import { defineComponent, reactive, getCurrentInstance, onMounted } from "vue";
-// import { codemirror } from "vue-codemirror";
-import "codemirror/lib/codemirror.css";
-require("codemirror/mode/javascript/javascript.js");
+import { defineComponent, ref, getCurrentInstance } from "vue";
+
+import { ElMessageBox } from "element-plus";
+
 export default defineComponent({
   name: "info",
-  // components: {
-  //   codemirror,
-  // },
+
   props: {
     data: Object,
   },
   setup(props) {
-    const dataBase = reactive({
-      dialogVisible: false,
-      options: {
-        mode: { name: "javascript", json: true },
-        lineNumbers: true,
-      },
-    });
-
+    const open = () => {
+      ElMessageBox.alert("流程上传成功", "流程上传成功", {
+        confirmButtonText: "确定",
+      });
+    };
+    const dataAll = ref(null);
     function init() {
-      console.log("this.data", this.data);
-      dataBase.dialogVisible = true;
       uploadData();
+      open();
     }
     const { proxy } = getCurrentInstance(); // 获取上下文对象
     function uploadData() {
+      var newDatas = Object.assign({}, props.data);
+      delete newDatas.windowList;
+      var newData = JSON.stringify(newDatas, null, 4);
+
+      console.log("newDatas:", newDatas);
       proxy.$axios
-        .post("/playlist/hot", JSON.stringify(props.data, null, 4)) // 网络请求
+        .post("/", newDatas) // 网络请求
         .then((result) => {
-          console.log(result);
+          dataAll.value = result;
         })
         .catch(() => {
           /* */
@@ -45,8 +42,8 @@ export default defineComponent({
 
     return {
       uploadData,
-      dataBase,
       init,
+      dataAll,
     };
   },
 });

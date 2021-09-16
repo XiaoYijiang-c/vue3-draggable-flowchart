@@ -1,4 +1,5 @@
 <template>
+  <!-- 主组件 -->
   <div v-if="list.easyFlowVisible">
     <el-row>
       <el-col :span="3" ref="flowTool">
@@ -10,7 +11,7 @@
             <div style="margin-bottom: 5px; margin-left: 10px">
               <el-link type="primary">{{ list.data.name }}</el-link>
               <el-button type="info" icon="el-icon-document" @click="dataInfo"
-                >流程信息</el-button
+                >上传流程</el-button
               >
               <el-button
                 type="primary"
@@ -45,9 +46,9 @@
                   width="50%"
                   :before-close="handleClose"
                   v-if="window.type === 'txt' || window.type === 'csv'"
+                  center
                 >
                   <el-form
-                    :model="node"
                     ref="dataForm"
                     label-width="80px"
                     :id="'form' + window.wid"
@@ -154,23 +155,20 @@
                   title="收货地址"
                   v-model="window.nodeFormVisible"
                   v-else-if="window.type === 'list'"
+                  center
                 >
-                  <el-table :data="state.gridData">
+                  {{ dataFromBack }}
+                  <!-- <el-table :data="state.gridData">
                     <el-table-column
                       property="date"
-                      label="日期"
                       width="150"
                     ></el-table-column>
                     <el-table-column
                       property="name"
-                      label="姓名"
                       width="200"
                     ></el-table-column>
-                    <el-table-column
-                      property="address"
-                      label="地址"
-                    ></el-table-column>
-                  </el-table>
+                    <el-table-column property="address"></el-table-column>
+                  </el-table> -->
                 </el-dialog>
               </div>
             </div>
@@ -187,14 +185,7 @@
   </div>
 </template>
 <script>
-import {
-  defineComponent,
-  reactive,
-  onMounted,
-  nextTick,
-  ref,
-  getCurrentInstance,
-} from "vue";
+import { defineComponent, reactive, onMounted, nextTick, ref } from "vue";
 import { jsPlumb } from "jsplumb";
 import { ElMessageBox } from "element-plus";
 import { ElMessage } from "element-plus";
@@ -202,8 +193,6 @@ import flowNode from "@/components/node";
 import flowTool from "@/components/tool";
 import FlowInfo from "@/components/info";
 import $ from "jquery";
-// import FlowNodeForm from "./node_form";
-// import chart from "./chart";
 import lodash from "lodash";
 import { getDataA } from "./data_A";
 export default defineComponent({
@@ -212,119 +201,17 @@ export default defineComponent({
     flowNode,
     flowTool,
     FlowInfo,
-    // FlowNodeForm,
-    // chart,
   },
   setup() {
-    const { proxy } = getCurrentInstance(); // 获取上下文对象
-    function uploadFiles(window) {
-      var formData = new FormData($("#form" + window.wid)[0]);
-      console.log("formData", window.wid);
-      // proxy.$axios
-      //   .post("/playlist/hot", formData) // 网络请求
-      //   .then((result) => {
-      //     console.log(result);
-      //   })
-      //   .catch(() => {
-      //     /* */
-      //   });
-      $.ajax({
-        type: "post",
-        url: "http://127.0.0.1:8081",
-        data: formData,
-        cache: false,
-        processData: false,
-        contentType: false,
-        success: function () {
-          // let jsonData = JSON.parse(data);
-          // console.log("jsonData.tag", jsonData.tag);
-        },
-      });
-    }
-    const state = reactive({
-      gridData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-      ],
-    });
-    function computeSize(window) {
-      if (window.dataEncodingType === "dict") {
-        window.size = String(window.input) + "*1";
-      } else if (window.dataEncodingType === "oneHot") {
-        if (window.dataType === "DNA" || window.dataType === "RNA") {
-          window.size = String(window.input) + "* 4";
-        } else if (window.dataType === "protein") {
-          window.size = String(window.input) + "* 20";
-        }
-      }
-    }
-    function fileInfo(callback, window) {
-      // 获取input标签选择的文件,并选择第一条
-
-      let resultFile = document.getElementById(window.wid).files[0];
-      console.log(window.wid);
-      // 如果文件存在
-
-      if (resultFile) {
-        // 获取文件信息
-        window.FILE.file = resultFile;
-        // 获取文件名
-        window.FILE.fileName = resultFile.name;
-
-        // 使用 FileReader 来读取文件
-        let reader = new FileReader();
-
-        // 读取纯文本文件,且编码格式为 utf-8
-        reader.readAsText(resultFile, "UTF-8");
-
-        // 读取文件,会触发 onload 异步事件,可使用回调函数 来获取最终的值.
-        reader.onload = function (e) {
-          let fileContent = e.target.result;
-
-          // 若为回调函数,则触发回调事件
-          if (callback && typeof callback === "function") {
-            callback(fileContent, window);
-          }
-        };
-      }
-    }
-    function getFileContent(fileContent, window) {
-      window.FILE.fileContent = fileContent;
-    }
-    const handleClose = (done) => {
-      ElMessageBox.confirm("确认关闭？")
-        .then(() => {
-          done();
-        })
-        .catch(() => {
-          // catch
-        });
-    };
-
+    //获取子组件
     const flowTool = ref(null);
     const flowInfo = ref(null);
-    const nodeForm = ref();
-    const chart = ref(null);
     const nodes = ref();
+
+    //对节点的全局计数
     const INDEX = ref(0);
+
+    //关于节点的属性设置
     const list = reactive({
       lineList: [],
       nodeList: [],
@@ -334,6 +221,8 @@ export default defineComponent({
       index: 1,
       data: {},
     });
+
+    // 关于jsplumb的设置
     const allJsPlumb = reactive({
       jsPlumb: null, // jsPlumb 实例
 
@@ -397,13 +286,14 @@ export default defineComponent({
       // 是否加载完毕
       loadEasyFlowFinish: false,
     });
+    //挂载 jsplumb 初始化画布
     onMounted(() => {
       allJsPlumb.jsPlumb = jsPlumb.getInstance();
       nextTick(() => {
         dataReloadA();
       });
     });
-
+    //绘制流程图
     function loadEasyFlow() {
       for (var i = 0; i < list.data.nodeList.length; i++) {
         let node = list.data.nodeList[i];
@@ -420,11 +310,14 @@ export default defineComponent({
         allJsPlumb.loadEasyFlowFinish = true;
       });
     }
+    //删除线
     function deleteLine(from, to) {
       list.data.lineList = list.data.lineList.filter(function (line) {
         return line.from !== from && line.to !== to;
       });
     }
+
+    //对是否连线的逻辑判断
     function hasLine(from, to) {
       for (var i = 0; i < list.data.lineList.length; i++) {
         var line = list.data.lineList[i];
@@ -454,6 +347,16 @@ export default defineComponent({
                 (node1.type === "txt" && node2.type === "row") ||
                 (node1.type === "txt" && node2.type === "col") ||
                 (node1.type === "row" && node2.type === "col") ||
+                (node1.type === "row" && node2.type === "mat") ||
+                (node1.type === "col" && node2.type === "mat") ||
+                (node1.type === "list" && node2.type === "col") ||
+                (node1.type === "list" && node2.type === "row") ||
+                (node1.type === "list" && node2.type === "csv") ||
+                (node1.type === "list" && node2.type === "txt") ||
+                (node1.type === "list" && node2.type === "mat") ||
+                (node1.type === "mat" && node2.type === "mat") ||
+                (node1.type === "mat" && node2.type === "txt") ||
+                (node1.type === "mat" && node2.type === "csv") ||
                 (node1.type === "col" && node2.type === "row")
               ) {
                 return true;
@@ -464,6 +367,50 @@ export default defineComponent({
       }
       return false;
     }
+    function limitDataTable(from, to) {
+      console.log("to", to);
+
+      for (var i = 0; i < list.data.nodeList.length; i++) {
+        if (list.data.nodeList[i].id == to) {
+          if (
+            list.data.nodeList[i].type === "list" ||
+            list.data.nodeList[i].type === "mat"
+          ) {
+            for (var cnt = 0; cnt < list.data.lineList.length; cnt++) {
+              var line = list.data.lineList[cnt];
+              console.log("line.to", line.to);
+              console.log("to", to);
+              if (line.to == to) {
+                console.log("line.to", line.to);
+                console.log("to", to);
+                return true;
+              }
+            }
+          }
+        }
+      }
+
+      return false;
+    }
+    function isMAT(from, to) {
+      for (var i = 0; i < list.data.nodeList.length; i++) {
+        var node1 = list.data.nodeList[i];
+        if (node1.id === from) {
+          for (var cnt = 0; cnt < list.data.nodeList.length; cnt++) {
+            var node2 = list.data.nodeList[cnt];
+            if (node2.id === to) {
+              if (
+                (node1.type === "txt" && node2.type === "mat") ||
+                (node1.type === "csv" && node2.type === "mat")
+              ) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+    //初始化jsplumb
     function jsPlumbInit() {
       allJsPlumb.jsPlumb.ready(() => {
         // 导入默认配置
@@ -524,6 +471,9 @@ export default defineComponent({
           } else if (hasProblem(from, to)) {
             ElMessage.error("不满足逻辑");
             return false;
+          } else if (limitDataTable(from, to)) {
+            ElMessage.error("Data Table和矩阵只能被一个其他节点连接");
+            return false;
           } else {
             ElMessage({
               message: "连接成功",
@@ -538,24 +488,7 @@ export default defineComponent({
         });
       });
     }
-    function isMAT(from, to) {
-      for (var i = 0; i < list.data.nodeList.length; i++) {
-        var node1 = list.data.nodeList[i];
-        if (node1.id === from) {
-          for (var cnt = 0; cnt < list.data.nodeList.length; cnt++) {
-            var node2 = list.data.nodeList[cnt];
-            if (node2.id === to) {
-              if (
-                (node1.type === "txt" && node2.type === "mat") ||
-                (node1.type === "csv" && node2.type === "mat")
-              ) {
-                return true;
-              }
-            }
-          }
-        }
-      }
-    }
+    //改变节点位置 实现可拖拽布局
     function changeNodeSite(data) {
       for (var i = 0; i < list.data.nodeList.length; i++) {
         let node = list.data.nodeList[i];
@@ -565,6 +498,8 @@ export default defineComponent({
         }
       }
     }
+
+    //添加节点
     function addNode(evt, nodeMenu, mousePosition) {
       console.log("添加节点", evt, nodeMenu);
 
@@ -626,7 +561,7 @@ export default defineComponent({
         });
       });
     }
-
+    //删除节点
     function deleteNode(Node) {
       ElMessageBox("确定要删除节点" + Node.id + "?", "提示", {
         confirmButtonText: "确定",
@@ -643,15 +578,14 @@ export default defineComponent({
           });
           INDEX.value--;
           nextTick(() => {
-            console.log("删除" + Node.id);
             allJsPlumb.jsPlumb.removeAllEndpoints(Node.id);
           });
         })
         .catch(() => {});
       return true;
     }
+    //点击编辑节点时触发
     function editNode(node) {
-      console.log("编辑节点", nodeForm.value, chart.value);
       for (var cnt = 0; cnt < list.data.nodeList.length; cnt++) {
         if (node.wid === list.data.windowList[cnt].wid) {
           list.data.windowList[cnt].nodeFormVisible = true;
@@ -659,14 +593,17 @@ export default defineComponent({
         }
       }
     }
+    //点击上传流程后触发
+    const dataFromBack = ref(null);
     function dataInfo() {
       list.flowInfoVisible = true;
       nextTick(() => {
-        // props.flowInfo.init();
+        console.log("flowInfo.value.dataALL", flowInfo.value.dataAll);
+        dataFromBack.value = flowInfo.value.dataAll;
         flowInfo.value.init();
-        console.log(flowInfo.value);
       });
     }
+    //获取初始画布信息
     function dataReload(data) {
       list.easyFlowVisible = false;
       list.data.nodeList = [];
@@ -687,7 +624,105 @@ export default defineComponent({
     function dataReloadA() {
       dataReload(getDataA());
     }
+    //上传文件
+    function uploadFiles(window) {
+      var formData = new FormData($("#form" + window.wid)[0]);
+      console.log("formData", window.wid);
 
+      $.ajax({
+        type: "post",
+        url: "http://127.0.0.1:8081",
+        data: formData,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function () {},
+      });
+    }
+    //表格信息...
+    const state = reactive({
+      gridData: [
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+      ],
+    });
+
+    //计算矩阵维度
+    function computeSize(window) {
+      if (window.dataEncodingType === "dict") {
+        window.size = String(window.input) + "*1";
+      } else if (window.dataEncodingType === "oneHot") {
+        if (window.dataType === "DNA" || window.dataType === "RNA") {
+          window.size = String(window.input) + "* 4";
+        } else if (window.dataType === "protein") {
+          window.size = String(window.input) + "* 20";
+        }
+      }
+    }
+
+    //读取文件
+    function fileInfo(callback, window) {
+      // 获取input标签选择的文件,并选择第一条
+
+      let resultFile = document.getElementById(window.wid).files[0];
+      console.log(window.wid);
+      // 如果文件存在
+
+      if (resultFile) {
+        // 获取文件信息
+        window.FILE.file = resultFile;
+        // 获取文件名
+        window.FILE.fileName = resultFile.name;
+
+        // 使用 FileReader 来读取文件
+        let reader = new FileReader();
+
+        // 读取纯文本文件,且编码格式为 utf-8
+        reader.readAsText(resultFile, "UTF-8");
+
+        // 读取文件,会触发 onload 异步事件,可使用回调函数 来获取最终的值.
+        reader.onload = function (e) {
+          let fileContent = e.target.result;
+
+          // 若为回调函数,则触发回调事件
+          if (callback && typeof callback === "function") {
+            callback(fileContent, window);
+          }
+        };
+      }
+    }
+    //提取获得的文件内容
+    function getFileContent(fileContent, window) {
+      window.FILE.fileContent = fileContent;
+    }
+    //关闭时的提示
+    const handleClose = (done) => {
+      ElMessageBox.confirm("确认关闭？")
+        .then(() => {
+          done();
+        })
+        .catch(() => {
+          // catch
+        });
+    };
     return {
       state,
       fileInfo,
@@ -695,10 +730,8 @@ export default defineComponent({
       handleClose,
       list,
       nodes,
-      nodeForm,
       flowTool,
       flowInfo,
-      chart,
       isMAT,
       computeSize,
       changeNodeSite,
@@ -724,6 +757,7 @@ export default defineComponent({
   background-size: 10px 10px;
   /* height: 900px; */
   background-color: rgb(251, 251, 251);
+  height: 650px;
   /*background-color: #42b983;*/
   position: relative;
 }

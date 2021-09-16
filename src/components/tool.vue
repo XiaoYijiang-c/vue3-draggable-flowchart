@@ -23,8 +23,8 @@
           >
             <template #item="{ element }">
               <el-menu-item
-                :index="element.type + i"
-                :key="element.type + i"
+                :index="element.type"
+                :key="element.type"
                 :type="element.type"
               >
                 <i :class="element.ico"></i>{{ element.name }}
