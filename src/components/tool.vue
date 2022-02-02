@@ -71,6 +71,11 @@ export default defineComponent({
               name: "上传CSV文件",
               ico: "el-icon-odometer",
             },
+            {
+              type: "zdy",
+              name: "上传自定义模型",
+              ico: "el-icon-odometer",
+            },
           ],
         },
         {
@@ -140,6 +145,7 @@ export default defineComponent({
       dataBase.nodeMenu = getMenu(attrs.type.nodeValue);
     }
     function addNode(evt) {
+      console.log("InFirefox", mousePosition);
       context.emit("addNode", evt, dataBase.nodeMenu, mousePosition);
     }
     function isFirefox() {
@@ -176,5 +182,9 @@ export default defineComponent({
   line-height: 50px;
   vertical-align: middle;
   border-bottom: 1px solid #d3d3d3;
+}
+
+li {
+  width: 100%;
 }
 </style>

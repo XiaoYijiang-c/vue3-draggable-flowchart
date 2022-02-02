@@ -1,8 +1,8 @@
-# new_project
+# 
+
+[TOC]
 
 ## Description
-
-This is a project based Vue3 and jsplumb.
 
 **Thanks to [BiaoChengLiu/easy-flow](https://github.com/BiaoChengLiu/easy-flow)**
 
@@ -14,7 +14,9 @@ This is a project based Vue3 and jsplumb.
 | v1.1    | Fix some bugs                                       |
 | V1.2.1  | Connect with back end                               |
 | V1.2.2  | Fix bug                                             |
-| ...     | ...                                                 |
+| V1.2.3  | change DataTable                                                 |
+| ... | ...                                                 |
+| ...  | ...                                                 |
 
 
 

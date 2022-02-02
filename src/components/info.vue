@@ -5,6 +5,7 @@
 import { defineComponent, ref, getCurrentInstance } from "vue";
 
 import { ElMessageBox } from "element-plus";
+import { useState } from "vue";
 
 export default defineComponent({
   name: "info",
@@ -19,25 +20,28 @@ export default defineComponent({
       });
     };
     const dataAll = ref(null);
+    //const [data, setData] = useState(null)
+
     function init() {
-      uploadData();
+      dataAll.value = uploadData();
       open();
+      console.log("111", dataAll.value.then);
     }
     const { proxy } = getCurrentInstance(); // 获取上下文对象
-    function uploadData() {
+    async function uploadData() {
       var newDatas = Object.assign({}, props.data);
       delete newDatas.windowList;
-      var newData = JSON.stringify(newDatas, null, 4);
 
       console.log("newDatas:", newDatas);
-      proxy.$axios
-        .post("/", newDatas) // 网络请求
-        .then((result) => {
-          dataAll.value = result;
+      var response = await proxy.$axios
+        .post("/register", newDatas) // 网络请求
+        .then((res) => {
+          return res;
         })
         .catch(() => {
           /* */
         });
+      return response;
     }
 
     return {

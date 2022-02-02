@@ -6,10 +6,10 @@
         <flowTool @addNode="addNode"></flowTool>
       </el-col>
       <el-col :span="21">
-        <el-row>
+        <el-row :span="3">
           <el-col :span="24">
             <div style="margin-bottom: 5px; margin-left: 10px">
-              <el-link type="primary">{{ list.data.name }}</el-link>
+              <el-link type="primary">{{ list.name }}</el-link>
               <el-button type="info" icon="el-icon-document" @click="dataInfo"
                 >上传流程</el-button
               >
@@ -19,14 +19,20 @@
                 icon="el-icon-refresh"
                 >清空</el-button
               >
+              <el-button
+                type="success"
+                icon="el-icon-refresh"
+                @click="addConsole"
+                >添加控制台</el-button
+              >
             </div>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row :span="21">
           <el-col :span="24">
             <!--画布-->
-            <div id="flowContainer" class="container">
-              <template v-for="node in list.data.nodeList" :key="node.id">
+            <div id="flowContainer" class="container" ref="efContainer">
+              <template v-for="node in list.nodeList" :key="node.id">
                 <flow-node
                   ref="nodes"
                   v-show="node.show"
@@ -38,7 +44,7 @@
                 >
                 </flow-node>
               </template>
-              <div v-for="window in list.data.windowList" :key="window.wid">
+              <div v-for="window in list.windowList" :key="window.wid">
                 <!-- v-if="window.type === 'txt'" -->
                 <el-dialog
                   title="提示"
@@ -68,10 +74,7 @@
                         >oneHot</el-radio
                       >
                     </el-form-item>
-                    <el-form-item
-                      label="数据类型"
-                      v-if="window.dataEncodingType === 'oneHot'"
-                    >
+                    <el-form-item label="数据类型">
                       <el-radio
                         v-model="window.dataType"
                         label="DNA"
@@ -152,35 +155,162 @@
                 </el-dialog>
                 <!-- v-if="window.type === 'list'" -->
                 <el-dialog
-                  title="收货地址"
+                  title="矩 阵"
                   v-model="window.nodeFormVisible"
                   v-else-if="window.type === 'list'"
                   center
                 >
-                  {{ dataFromBack }}
-                  <!-- <el-table :data="state.gridData">
-                    <el-table-column
-                      property="date"
-                      width="150"
-                    ></el-table-column>
-                    <el-table-column
-                      property="name"
-                      width="200"
-                    ></el-table-column>
-                    <el-table-column property="address"></el-table-column>
-                  </el-table> -->
+                  <el-scrollbar>
+                    <div v-if="window.showMAR != null">
+                      <p v-for="item in window.showMAR" :key="item">
+                        {{ item }}
+                      </p>
+                    </div>
+                    <div v-else><el-empty :image-size="200"></el-empty></div>
+                  </el-scrollbar>
+                </el-dialog>
+                <!-- v-if="window.type === 'zdy'" -->
+                <el-dialog
+                  title="上传自定义模型"
+                  class="zdy"
+                  v-model="window.nodeFormVisible"
+                  width="50%"
+                  :before-close="handleClose"
+                  v-else-if="window.type === 'zdy'"
+                  center
+                >
+                  <el-form
+                    ref="dataForm"
+                    label-width="140px"
+                    label-position="left"
+                    :id="'form' + window.wid"
+                    class="zdymodel"
+                  >
+                    <el-form-item label="文件类型">
+                      <el-radio-group v-model="window.fileType">
+                        <el-radio-button label="py" name="modelfiletype"
+                          >选择.py模型文件</el-radio-button
+                        >
+                        <el-radio-button label="json" name="modelfiletype"
+                          >选择.json模型文件</el-radio-button
+                        >
+                      </el-radio-group>
+                    </el-form-item>
+                    <el-form-item
+                      label=".py模型文件上传"
+                      v-show="window.fileType === 'py'"
+                    >
+                      <input
+                        type="file"
+                        name="model"
+                        :id="window.wid"
+                        class="file"
+                        accept=".py"
+                        @change="fileInfo(getFileContent, window)"
+                      />
+                    </el-form-item>
+                    <el-form-item
+                      label=".json模型文件上传"
+                      v-show="window.fileType === 'json'"
+                    >
+                      <input
+                        type="file"
+                        name="model"
+                        :id="window.wid"
+                        class="file"
+                        accept=".json"
+                        @change="fileInfo(getFileContent, window)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="文件类型">
+                      <el-radio-group v-model="window.fileType2">
+                        <el-radio-button label="1" name="hasweight"
+                          >选择权重文件</el-radio-button
+                        >
+                        <el-radio-button label="0" name="hasweight"
+                          >不选择权重文件</el-radio-button
+                        >
+                      </el-radio-group>
+                    </el-form-item>
+                    <el-form-item
+                      label="权重文件上传"
+                      v-show="window.fileType2 === '1'"
+                    >
+                      <input
+                        type="file"
+                        name="weight"
+                        :id="window.wid"
+                        class="file"
+                        @change="fileInfo(getFileContent, window)"
+                      />
+                    </el-form-item>
+                  </el-form>
+                  <template #footer>
+                    <span class="dialog-footer">
+                      <el-button @click="window.nodeFormVisible = false"
+                        >取 消</el-button
+                      >
+                      <el-button
+                        type="primary"
+                        @click="
+                          (window.nodeFormVisible = false), uploadFiles1(window)
+                        "
+                        >确 定</el-button
+                      >
+                    </span>
+                  </template>
+                </el-dialog>
+                <!-- v-if="window.type === 'mat'" -->
+                <el-dialog
+                  title="矩 阵"
+                  v-model="window.nodeFormVisible"
+                  v-else-if="window.type === 'mat'"
+                  center
+                >
+                  <el-form
+                    ref="dataForm"
+                    label-width="140px"
+                    label-position="left"
+                    :id="'form' + window.wid"
+                  >
+                    <el-form-item label="文件类型">
+                      <el-radio-group v-model="window.fileType2">
+                        <el-radio-button label="1" name="hasweight"
+                          >选择权重文件</el-radio-button
+                        >
+                        <el-radio-button label="0" name="hasweight"
+                          >不选择权重文件</el-radio-button
+                        >
+                      </el-radio-group>
+                    </el-form-item>
+                  </el-form>
+                  <template #footer>
+                    <span class="dialog-footer">
+                      <el-button @click="window.nodeFormVisible = false"
+                        >取 消</el-button
+                      >
+                      <el-button
+                        type="primary"
+                        @click="
+                          (window.nodeFormVisible = false), uploadFiles2(window)
+                        "
+                        >确 定</el-button
+                      >
+                    </span>
+                  </template>
                 </el-dialog>
               </div>
             </div>
           </el-col>
         </el-row>
+        <flow-consoles class="FlowConsoles" ref="FlowConsoles"></flow-consoles>
       </el-col>
     </el-row>
 
     <flow-info
       v-if="list.flowInfoVisible"
       ref="flowInfo"
-      :data="list.data"
+      :data="list"
     ></flow-info>
   </div>
 </template>
@@ -192,22 +322,30 @@ import { ElMessage } from "element-plus";
 import flowNode from "@/components/node";
 import flowTool from "@/components/tool";
 import FlowInfo from "@/components/info";
+import FlowConsoles from "@/components/consoles";
 import $ from "jquery";
 import lodash from "lodash";
 import { getDataA } from "./data_A";
+
 export default defineComponent({
   name: "App",
   components: {
     flowNode,
     flowTool,
     FlowInfo,
+    FlowConsoles,
   },
   setup() {
     //获取子组件
     const flowTool = ref(null);
     const flowInfo = ref(null);
-    const nodes = ref();
+    const FlowConsoles = ref();
+    const efContainer = ref(null);
+    onMounted(() => {
+      console.log("efContainer", efContainer.value);
+    });
 
+    const nodes = ref();
     //对节点的全局计数
     const INDEX = ref(0);
 
@@ -219,7 +357,6 @@ export default defineComponent({
       easyFlowVisible: true,
       flowInfoVisible: false,
       index: 1,
-      data: {},
     });
 
     // 关于jsplumb的设置
@@ -257,7 +394,8 @@ export default defineComponent({
         EndpointStyle: { fill: "rgba(255,255,255,0)", outlineWidth: 1 },
         LogEnabled: true, //是否打开jsPlumb的内部日志记录
         // 绘制线
-        PaintStyle: { stroke: "black", strokeWidth: 3 },
+        PaintStyle: { stroke: "black", strokeWidth: 2 },
+        HoverPaintStyle: { stroke: "#D3D3D3", strokeWidth: 3 },
         // 绘制箭头
         Overlays: [["Arrow", { width: 10, length: 14, location: 1 }]],
         RenderMode: "svg",
@@ -295,8 +433,8 @@ export default defineComponent({
     });
     //绘制流程图
     function loadEasyFlow() {
-      for (var i = 0; i < list.data.nodeList.length; i++) {
-        let node = list.data.nodeList[i];
+      for (var i = 0; i < list.nodeList.length; i++) {
+        let node = list.nodeList[i];
         // 设置源点，可以拖出线连接其他节点
         allJsPlumb.jsPlumb.makeSource(node.id, allJsPlumb.jsplumbSourceOptions);
         // // 设置目标点，其他源点拖出的线可以连接该节点
@@ -306,21 +444,33 @@ export default defineComponent({
           containment: "parent",
         });
       }
+      // for (var i = 0; i < list.lineList.length; i++) {
+      //   let line = list.lineList[i];
+      //   var connParam = {
+      //     source: line.from,
+      //     target: line.to,
+      //     label: line.label ? line.label : "",
+      //     connector: line.connector ? line.connector : "",
+      //     anchors: line.anchors ? line.anchors : undefined,
+      //     paintStyle: line.paintStyle ? line.paintStyle : undefined,
+      //   };
+      //   allJsPlumb.jsPlumb.connect(connParam, allJsPlumb.jsplumbConnectOptions);
+      // }
       nextTick(() => {
         allJsPlumb.loadEasyFlowFinish = true;
       });
     }
     //删除线
     function deleteLine(from, to) {
-      list.data.lineList = list.data.lineList.filter(function (line) {
+      list.lineList = list.lineList.filter(function (line) {
         return line.from !== from && line.to !== to;
       });
     }
 
     //对是否连线的逻辑判断
     function hasLine(from, to) {
-      for (var i = 0; i < list.data.lineList.length; i++) {
-        var line = list.data.lineList[i];
+      for (var i = 0; i < list.lineList.length; i++) {
+        var line = list.lineList[i];
         if (line.from === from && line.to === to) {
           return true;
         }
@@ -331,11 +481,11 @@ export default defineComponent({
       return hasLine(to, from);
     }
     function hasProblem(from, to) {
-      for (var i = 0; i < list.data.nodeList.length; i++) {
-        var node1 = list.data.nodeList[i];
+      for (var i = 0; i < list.nodeList.length; i++) {
+        var node1 = list.nodeList[i];
         if (node1.id === from) {
-          for (var cnt = 0; cnt < list.data.nodeList.length; cnt++) {
-            var node2 = list.data.nodeList[cnt];
+          for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
+            var node2 = list.nodeList[cnt];
             if (node2.id === to) {
               if (
                 (node1.type === "txt" && node2.type === "csv") ||
@@ -370,14 +520,14 @@ export default defineComponent({
     function limitDataTable(from, to) {
       console.log("to", to);
 
-      for (var i = 0; i < list.data.nodeList.length; i++) {
-        if (list.data.nodeList[i].id == to) {
+      for (var i = 0; i < list.nodeList.length; i++) {
+        if (list.nodeList[i].id == to) {
           if (
-            list.data.nodeList[i].type === "list" ||
-            list.data.nodeList[i].type === "mat"
+            list.nodeList[i].type === "list" ||
+            list.nodeList[i].type === "mat"
           ) {
-            for (var cnt = 0; cnt < list.data.lineList.length; cnt++) {
-              var line = list.data.lineList[cnt];
+            for (var cnt = 0; cnt < list.lineList.length; cnt++) {
+              var line = list.lineList[cnt];
               console.log("line.to", line.to);
               console.log("to", to);
               if (line.to == to) {
@@ -393,11 +543,11 @@ export default defineComponent({
       return false;
     }
     function isMAT(from, to) {
-      for (var i = 0; i < list.data.nodeList.length; i++) {
-        var node1 = list.data.nodeList[i];
+      for (var i = 0; i < list.nodeList.length; i++) {
+        var node1 = list.nodeList[i];
         if (node1.id === from) {
-          for (var cnt = 0; cnt < list.data.nodeList.length; cnt++) {
-            var node2 = list.data.nodeList[cnt];
+          for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
+            var node2 = list.nodeList[cnt];
             if (node2.id === to) {
               if (
                 (node1.type === "txt" && node2.type === "mat") ||
@@ -438,7 +588,7 @@ export default defineComponent({
           let from = evt.source.id;
           let to = evt.target.id;
           if (allJsPlumb.loadEasyFlowFinish) {
-            list.data.lineList.push({
+            list.lineList.push({
               from: from,
               to: to,
             });
@@ -490,8 +640,8 @@ export default defineComponent({
     }
     //改变节点位置 实现可拖拽布局
     function changeNodeSite(data) {
-      for (var i = 0; i < list.data.nodeList.length; i++) {
-        let node = list.data.nodeList[i];
+      for (var i = 0; i < list.nodeList.length; i++) {
+        let node = list.nodeList[i];
         if (node.id === data.nodeId) {
           node.left = data.left;
           node.top = data.top;
@@ -499,25 +649,35 @@ export default defineComponent({
       }
     }
 
+    function isFirefox() {
+      var userAgent = navigator.userAgent;
+      if (userAgent.indexOf("Firefox") > -1) {
+        return true;
+      }
+      return false;
+    }
+
     //添加节点
     function addNode(evt, nodeMenu, mousePosition) {
       console.log("添加节点", evt, nodeMenu);
-
+      console.log("flowTool.value", flowTool.value);
       let width = flowTool.value.$el.clientWidth;
       const index = list.index++;
       let nodeId = "node" + index;
       var left = evt.originalEvent.clientX;
       var top = evt.originalEvent.clientY;
-
-      if (mousePosition.left < 0) {
-        left = evt.originalEvent.layerX - width;
-      }
-      if (mousePosition.top < 0) {
-        top = evt.originalEvent.clientY - 50;
-      }
       //居中
-      left -= 100;
-      top -= 25;
+      left -= 300;
+      top -= 75;
+      if (isFirefox()) {
+        console.log("INFIREFOX");
+        left = mousePosition.left;
+        top = mousePosition.top;
+        //居中
+        left -= 100;
+        top -= 25;
+      }
+
       var node = {
         id: "node" + index,
         wid: index,
@@ -535,6 +695,9 @@ export default defineComponent({
         nodeFormVisible: false,
         dataEncodingType: ref(null),
         dataType: ref(null),
+        fileType: ref("py"),
+        fileType2: ref("1"),
+        showMar: ref(null),
         FILE: reactive({
           file: {},
           fileName: "",
@@ -543,11 +706,11 @@ export default defineComponent({
         input: ref(0),
         size: ref(),
       };
-      list.data.windowList.push(window);
+      list.windowList.push(window);
       // console.log(nodes.value);
-      list.data.nodeList.push(node);
+      list.nodeList.push(node);
       INDEX.value++;
-      // list.data = { 1: "1", 2: "2" };
+      // list = { 1: "1", 2: "2" };
       nextTick(() => {
         nodes.value.nodes.style.left = node.left;
         nodes.value.nodes.style.top = node.top;
@@ -570,10 +733,10 @@ export default defineComponent({
         closeOnClickModal: false,
       })
         .then(() => {
-          list.data.nodeList = list.data.nodeList.filter((node) => {
+          list.nodeList = list.nodeList.filter((node) => {
             return node.id !== Node.id;
           });
-          list.data.windowList = list.data.windowList.filter((window) => {
+          list.windowList = list.windowList.filter((window) => {
             return window.wid !== Node.wid;
           });
           INDEX.value--;
@@ -586,33 +749,47 @@ export default defineComponent({
     }
     //点击编辑节点时触发
     function editNode(node) {
-      for (var cnt = 0; cnt < list.data.nodeList.length; cnt++) {
-        if (node.wid === list.data.windowList[cnt].wid) {
-          list.data.windowList[cnt].nodeFormVisible = true;
+      for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
+        if (node.wid === list.windowList[cnt].wid) {
+          list.windowList[cnt].nodeFormVisible = true;
+          if (node.type === "list") {
+            console.log("list...");
+            try {
+              node.showMar = dataFromBack.value[node.wid];
+            } catch (e) {}
+          }
+          console.log(node.showMar);
           break;
         }
       }
     }
     //点击上传流程后触发
-    const dataFromBack = ref(null);
+    const dataFromBack = ref();
+
     function dataInfo() {
       list.flowInfoVisible = true;
       nextTick(() => {
-        console.log("flowInfo.value.dataALL", flowInfo.value.dataAll);
-        dataFromBack.value = flowInfo.value.dataAll;
         flowInfo.value.init();
+        flowInfo.value.dataAll
+          .then((res) => {
+            console.log("flowInfo.value.dataALL", res.data.rowjointdata);
+            dataFromBack.value = res.data.rowjointdata;
+          })
+          .catch(() => {
+            console.log("then");
+          });
       });
     }
     //获取初始画布信息
     function dataReload(data) {
       list.easyFlowVisible = false;
-      list.data.nodeList = [];
-      list.data.lineList = [];
+      list.nodeList = [];
+      list.lineList = [];
       nextTick(() => {
         // 这里模拟后台获取数据、然后加载
         data = lodash.cloneDeep(data);
         list.easyFlowVisible = true;
-        list.data = data;
+        list = data;
         nextTick(() => {
           allJsPlumb.jsPlumb = jsPlumb.getInstance();
           nextTick(() => {
@@ -628,42 +805,52 @@ export default defineComponent({
     function uploadFiles(window) {
       var formData = new FormData($("#form" + window.wid)[0]);
       console.log("formData", window.wid);
-
       $.ajax({
         type: "post",
-        url: "http://127.0.0.1:8081",
+        url: "http://127.0.0.1:5000",
         data: formData,
         cache: false,
         processData: false,
         contentType: false,
-        success: function () {},
+        success: (res) => {},
       });
     }
-    //表格信息...
-    const state = reactive({
-      gridData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
+    function uploadFiles1(window) {
+      var formData = new FormData($("#form" + window.wid)[0]);
+      console.log("formData", window.wid);
+      $.ajax({
+        type: "post",
+        url: "http://127.0.0.1:5000",
+        data: formData,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: (res) => {
+          alert(res.response);
         },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
+        error: (err) => {
+          alert(err);
         },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
+      });
+    }
+    function uploadFiles2(window) {
+      var formData = new FormData($("#form" + window.wid)[0]);
+      console.log("formData", window.wid);
+      $.ajax({
+        type: "post",
+        url: "http://182.92.194.235:8000/users/register",
+        data: formData,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: (res) => {
+          alert(res.response);
         },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
+        error: (err) => {
+          alert(err);
         },
-      ],
-    });
+      });
+    }
 
     //计算矩阵维度
     function computeSize(window) {
@@ -723,9 +910,14 @@ export default defineComponent({
           // catch
         });
     };
+    // 点击添加console
+    function addConsole() {
+      console.log(FlowConsoles.value);
+      FlowConsoles.value.addConsoleList();
+    }
     return {
-      state,
       fileInfo,
+      FlowConsoles,
       getFileContent,
       handleClose,
       list,
@@ -742,11 +934,18 @@ export default defineComponent({
       dataReloadA,
       dataEncodingType: ref(null),
       uploadFiles,
+      uploadFiles1,
+      uploadFiles2,
+      dataFromBack,
+      addConsole,
     };
   },
 });
 </script>
 <style>
+p {
+  white-space: nowrap;
+}
 #flowContainer {
   /* background-image: linear-gradient(
       90deg,
@@ -784,5 +983,43 @@ export default defineComponent({
   z-index: -1;
   /* width: 0px;
   height: 0px; */
+}
+.FlowConsoles {
+  position: fixed;
+  bottom: 0px;
+  width: 87.5%;
+}
+.file {
+  margin-top: 20px;
+}
+.select {
+  display: grid;
+  grid-template-columns: 5% repeat(3, 30%) 5%;
+  justify-items: center;
+  align-items: center;
+  height: 40px;
+  margin-bottom: 10px;
+  user-select: none;
+  /* background-color: #fff; */
+}
+.select .chooseBox1 {
+  grid-column-start: 2;
+  font-size: large;
+  padding: 7px;
+}
+.select .chooseBox1:hover {
+  grid-column-start: 2;
+  background-color: pink;
+  box-shadow: 6px 0px 10px rgba(0, 204, 204, 0.5);
+}
+.select .chooseBox2 {
+  grid-column-start: 4;
+  font-size: large;
+  padding: 7px;
+}
+.select .chooseBox2:hover {
+  grid-column-start: 4;
+  background-color: pink;
+  box-shadow: 6px 0px 10px rgba(0, 204, 204, 0.5);
 }
 </style>

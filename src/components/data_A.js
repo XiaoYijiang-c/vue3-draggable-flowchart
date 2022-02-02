@@ -1,5 +1,4 @@
 var data_A = {
-
     nodeList: [],
     lineList: [],
     windowList: [],
