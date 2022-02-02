@@ -789,7 +789,7 @@ export default defineComponent({
         // 这里模拟后台获取数据、然后加载
         data = lodash.cloneDeep(data);
         list.easyFlowVisible = true;
-        list = data;
+        // list = data;
         nextTick(() => {
           allJsPlumb.jsPlumb = jsPlumb.getInstance();
           nextTick(() => {
