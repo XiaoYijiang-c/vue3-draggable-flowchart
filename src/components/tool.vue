@@ -76,6 +76,11 @@ export default defineComponent({
               name: "上传自定义模型",
               ico: "el-icon-odometer",
             },
+            {
+              type: "other",
+              name: "上传第三方数据",
+              ico: "el-icon-time",
+            },
           ],
         },
         {

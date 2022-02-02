@@ -44,14 +44,18 @@
                 >
                 </flow-node>
               </template>
-              <div v-for="window in list.windowList" :key="window.wid">
+              <template v-for="window in list.windowList" :key="window.wid">
                 <!-- v-if="window.type === 'txt'" -->
                 <el-dialog
                   title="提示"
                   v-model="window.nodeFormVisible"
                   width="50%"
                   :before-close="handleClose"
-                  v-if="window.type === 'txt' || window.type === 'csv'"
+                  v-if="
+                    window.type === 'txt' ||
+                    window.type === 'csv' ||
+                    window.type === 'other'
+                  "
                   center
                 >
                   <el-form
@@ -273,15 +277,26 @@
                     label-position="left"
                     :id="'form' + window.wid"
                   >
-                    <el-form-item label="文件类型">
-                      <el-radio-group v-model="window.fileType2">
-                        <el-radio-button label="1" name="hasweight"
-                          >选择权重文件</el-radio-button
+                    <el-form-item label="矩阵处理">
+                      <el-radio-group v-model="window.standardizing">
+                        <el-radio-button
+                          label="standardization"
+                          name="matHandle"
+                          >标准化</el-radio-button
                         >
-                        <el-radio-button label="0" name="hasweight"
-                          >不选择权重文件</el-radio-button
+                        <el-radio-button label="normalization" name="matHandle"
+                          >归一化</el-radio-button
+                        >
+                        <el-radio-button label="none" name="matHandle"
+                          >不进行处理</el-radio-button
                         >
                       </el-radio-group>
+                      <el-input
+                        type="hidden"
+                        name="lineFrom"
+                        v-model="window.lineFrom"
+                        >{{}}</el-input
+                      >
                     </el-form-item>
                   </el-form>
                   <template #footer>
@@ -299,7 +314,7 @@
                     </span>
                   </template>
                 </el-dialog>
-              </div>
+              </template>
             </div>
           </el-col>
         </el-row>
@@ -697,7 +712,10 @@ export default defineComponent({
         dataType: ref(null),
         fileType: ref("py"),
         fileType2: ref("1"),
+        standardizing: ref("0"),
+        normalization: ref("0"),
         showMar: ref(null),
+        lineFrom: ref(null),
         FILE: reactive({
           file: {},
           fileName: "",
@@ -757,6 +775,8 @@ export default defineComponent({
             try {
               node.showMar = dataFromBack.value[node.wid];
             } catch (e) {}
+          } else if (node.type === "mat") {
+            list.windowList[cnt].lineFrom = test(list.windowList[cnt]);
           }
           console.log(node.showMar);
           break;
@@ -765,6 +785,16 @@ export default defineComponent({
     }
     //点击上传流程后触发
     const dataFromBack = ref();
+
+    function test(window) {
+      console.log("linelist", list.lineList);
+      for (let line of list.lineList) {
+        if (window.id == line.to) {
+          console.log("line.from", line.from);
+          return line.from;
+        }
+      }
+    }
 
     function dataInfo() {
       list.flowInfoVisible = true;
@@ -807,7 +837,8 @@ export default defineComponent({
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
-        url: "http://127.0.0.1:5000",
+        // url: "http://127.0.0.1:5000",
+        url: "http://182.92.194.235:8000/users/register",
         data: formData,
         cache: false,
         processData: false,
@@ -820,13 +851,16 @@ export default defineComponent({
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
-        url: "http://127.0.0.1:5000",
+        url: "http://182.92.194.235:8000/users/register",
         data: formData,
         cache: false,
         processData: false,
         contentType: false,
         success: (res) => {
-          alert(res.response);
+          ElMessage({
+            message: res.respone,
+            type: "success",
+          });
         },
         error: (err) => {
           alert(err);
@@ -844,10 +878,14 @@ export default defineComponent({
         processData: false,
         contentType: false,
         success: (res) => {
-          alert(res.response);
+          ElMessage({
+            message: res,
+            type: "success",
+          });
+          console.log("res.response", res);
         },
         error: (err) => {
-          alert(err);
+          console.log(err);
         },
       });
     }
@@ -924,6 +962,7 @@ export default defineComponent({
       nodes,
       flowTool,
       flowInfo,
+      test,
       isMAT,
       computeSize,
       changeNodeSite,
