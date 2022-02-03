@@ -832,8 +832,17 @@ export default defineComponent({
     }
     function changeNodeName(window) {
       for (let node of list.nodeList) {
-        if (node.id == window.id) {
-          node.name = window.FILE.fileName;
+        if (node.id == window.id && window.FILE.fileName) {
+          let str = window.FILE.fileName;
+          if (str.length > 12) {
+            node.name =
+              str.substring(0, 9) +
+              "..." +
+              str.split(".")[str.split(".").length - 1];
+          } else {
+            node.name = str;
+          }
+          console.log("node.name.length", node.name.length);
           break;
         }
       }
