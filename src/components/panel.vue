@@ -136,11 +136,6 @@
                         v-else-if="window.type === 'csv'"
                       />
                     </el-form-item>
-                    <el-form-item label="文件内容">
-                      <el-scrollbar id="scrollbar" height="100px">{{
-                        window.FILE.fileContent
-                      }}</el-scrollbar>
-                    </el-form-item>
                   </el-form>
                   <template #footer>
                     <span class="dialog-footer">
@@ -163,12 +158,16 @@
                   v-model="window.nodeFormVisible"
                   v-else-if="window.type === 'list'"
                   center
+                  
                 >
                   <el-scrollbar>
-                    <div v-if="window.showMAR != null">
-                      <p v-for="item in window.showMAR" :key="item">
+                    <div v-if="window.showData != null">
+                      <!-- <p v-for="item in window.showData" :key="item">
                         {{ item }}
-                      </p>
+                      </p> -->
+                      <p class="listDataP"><pre>
+                        {{ window.showData }}
+                        </pre></p>
                     </div>
                     <div v-else><el-empty :image-size="200"></el-empty></div>
                   </el-scrollbar>
@@ -295,8 +294,7 @@
                         type="hidden"
                         name="lineFrom"
                         v-model="window.lineFrom"
-                        >{{}}</el-input
-                      >
+                      ></el-input>
                     </el-form-item>
                   </el-form>
                   <template #footer>
@@ -363,7 +361,10 @@ export default defineComponent({
     const nodes = ref();
     //对节点的全局计数
     const INDEX = ref(0);
-
+    // nodeType
+    let uploadFilesType = ["txt", "csv", "zdy", "other"];
+    let transfrom = ["list", "mat"];
+    let splice = ["col", "row"];
     //关于节点的属性设置
     const list = reactive({
       lineList: [],
@@ -459,18 +460,6 @@ export default defineComponent({
           containment: "parent",
         });
       }
-      // for (var i = 0; i < list.lineList.length; i++) {
-      //   let line = list.lineList[i];
-      //   var connParam = {
-      //     source: line.from,
-      //     target: line.to,
-      //     label: line.label ? line.label : "",
-      //     connector: line.connector ? line.connector : "",
-      //     anchors: line.anchors ? line.anchors : undefined,
-      //     paintStyle: line.paintStyle ? line.paintStyle : undefined,
-      //   };
-      //   allJsPlumb.jsPlumb.connect(connParam, allJsPlumb.jsplumbConnectOptions);
-      // }
       nextTick(() => {
         allJsPlumb.loadEasyFlowFinish = true;
       });
@@ -501,31 +490,29 @@ export default defineComponent({
         if (node1.id === from) {
           for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
             var node2 = list.nodeList[cnt];
+            let nType1 = node1.type;
+            let nType2 = node2.type;
             if (node2.id === to) {
-              if (
-                (node1.type === "txt" && node2.type === "csv") ||
-                (node1.type === "csv" && node2.type === "txt") ||
-                (node1.type === "txt" && node2.type === "txt") ||
-                (node1.type === "csv" && node2.type === "csv") ||
-                (node1.type === "txt" && node2.type === "col") ||
-                (node1.type === "col" && node2.type === "txt") ||
-                (node1.type === "txt" && node2.type === "row") ||
-                (node1.type === "txt" && node2.type === "col") ||
-                (node1.type === "row" && node2.type === "col") ||
-                (node1.type === "row" && node2.type === "mat") ||
-                (node1.type === "col" && node2.type === "mat") ||
-                (node1.type === "list" && node2.type === "col") ||
-                (node1.type === "list" && node2.type === "row") ||
-                (node1.type === "list" && node2.type === "csv") ||
-                (node1.type === "list" && node2.type === "txt") ||
-                (node1.type === "list" && node2.type === "mat") ||
-                (node1.type === "mat" && node2.type === "mat") ||
-                (node1.type === "mat" && node2.type === "txt") ||
-                (node1.type === "mat" && node2.type === "csv") ||
-                (node1.type === "col" && node2.type === "row")
+              if (uploadFilesType.includes(nType2)) {
+                // 上传节点不可互连 且不可被连接
+                return true;
+              } else if (nType1 === "list") {
+                // list只能被连接
+                return true;
+              } else if (
+                splice.includes(nType2) &&
+                !transfrom.includes(nType1)
               ) {
+                // 只能拼接矩阵
+                return true;
+              } else if (
+                transfrom.includes(nType2) &&
+                !uploadFilesType.includes(nType1)
+              ) {
+                // 矩阵只能转换文件节点
                 return true;
               }
+              //
             }
           }
         }
@@ -543,11 +530,7 @@ export default defineComponent({
           ) {
             for (var cnt = 0; cnt < list.lineList.length; cnt++) {
               var line = list.lineList[cnt];
-              console.log("line.to", line.to);
-              console.log("to", to);
               if (line.to == to) {
-                console.log("line.to", line.to);
-                console.log("to", to);
                 return true;
               }
             }
@@ -712,9 +695,9 @@ export default defineComponent({
         dataType: ref(null),
         fileType: ref("py"),
         fileType2: ref("1"),
-        standardizing: ref("0"),
+        standardizing: ref("none"),
         normalization: ref("0"),
-        showMar: ref(null),
+        showData: ref(null),
         lineFrom: ref(null),
         FILE: reactive({
           file: {},
@@ -766,19 +749,35 @@ export default defineComponent({
       return true;
     }
     //点击编辑节点时触发
+    function findWindow(nodeid) {
+      for (let window of list.windowList) {
+        if (window.id === nodeid) {
+          return window;
+        }
+      }
+      return false;
+    }
     function editNode(node) {
       for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
         if (node.wid === list.windowList[cnt].wid) {
-          list.windowList[cnt].nodeFormVisible = true;
+          let window = list.windowList[cnt];
+          window.nodeFormVisible = true;
           if (node.type === "list") {
-            console.log("list...");
             try {
-              node.showMar = dataFromBack.value[node.wid];
-            } catch (e) {}
+              let foundNode = findWindow(findLinefrom(window));
+              console.log("foundNode", foundNode);
+              if (uploadFilesType.includes(foundNode.type)) {
+                window.showData = foundNode.FILE.fileContent;
+                console.log(window.showData);
+              } else {
+                window.showData = dataFromBack.value[node.wid];
+              }
+            } catch (e) {
+              console.log(e);
+            }
           } else if (node.type === "mat") {
-            list.windowList[cnt].lineFrom = test(list.windowList[cnt]);
+            window.lineFrom = findLinefrom(window);
           }
-          console.log(node.showMar);
           break;
         }
       }
@@ -786,7 +785,7 @@ export default defineComponent({
     //点击上传流程后触发
     const dataFromBack = ref();
 
-    function test(window) {
+    function findLinefrom(window) {
       console.log("linelist", list.lineList);
       for (let line of list.lineList) {
         if (window.id == line.to) {
@@ -831,6 +830,14 @@ export default defineComponent({
     function dataReloadA() {
       dataReload(getDataA());
     }
+    function changeNodeName(window) {
+      for (let node of list.nodeList) {
+        if (node.id == window.id) {
+          node.name = window.FILE.fileName;
+          break;
+        }
+      }
+    }
     //上传文件
     function uploadFiles(window) {
       var formData = new FormData($("#form" + window.wid)[0]);
@@ -845,6 +852,7 @@ export default defineComponent({
         contentType: false,
         success: (res) => {},
       });
+      changeNodeName(window);
     }
     function uploadFiles1(window) {
       var formData = new FormData($("#form" + window.wid)[0]);
@@ -962,7 +970,7 @@ export default defineComponent({
       nodes,
       flowTool,
       flowInfo,
-      test,
+      findLinefrom,
       isMAT,
       computeSize,
       changeNodeSite,
@@ -1060,5 +1068,8 @@ p {
   grid-column-start: 4;
   background-color: pink;
   box-shadow: 6px 0px 10px rgba(0, 204, 204, 0.5);
+}
+.listDataP {
+  height: 300px;
 }
 </style>
