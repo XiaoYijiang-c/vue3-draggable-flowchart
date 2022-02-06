@@ -53,8 +53,7 @@
                   :before-close="handleClose"
                   v-if="
                     window.type === 'txt' ||
-                    window.type === 'csv' ||
-                    window.type === 'other'
+                    window.type === 'csv' 
                   "
                   center
                 >
@@ -64,21 +63,7 @@
                     :id="'form' + window.wid"
                     @change="computeSize(window)"
                   >
-                    <el-form-item label="编码类型">
-                      <el-radio
-                        v-model="window.dataEncodingType"
-                        label="dict"
-                        name="dataEncodingType"
-                        >dict</el-radio
-                      >
-                      <el-radio
-                        v-model="window.dataEncodingType"
-                        label="oneHot"
-                        name="dataEncodingType"
-                        >oneHot</el-radio
-                      >
-                    </el-form-item>
-                    <el-form-item label="数据类型">
+                  <el-form-item label="数据类型">
                       <el-radio
                         v-model="window.dataType"
                         label="DNA"
@@ -97,8 +82,29 @@
                         name="dataType"
                         >protein</el-radio
                       >
+                      <el-radio
+                        v-model="window.dataType"
+                        label="other"
+                        name="dataType"
+                        >other</el-radio
+                      >
                     </el-form-item>
-                    <el-form-item label="Spclen">
+                    <el-form-item label="编码类型" v-show="window.dataType !='other'">
+                      <el-radio
+                        v-model="window.dataEncodingType"
+                        label="dict"
+                        name="dataEncodingType"
+                        >dict</el-radio
+                      >
+                      <el-radio
+                        v-model="window.dataEncodingType"
+                        label="oneHot"
+                        name="dataEncodingType"
+                        >oneHot</el-radio
+                      >
+                    </el-form-item>
+                    
+                    <el-form-item label="Spclen" v-show="window.dataType !='other'">
                       <el-input
                         v-model="window.input"
                         placeholder="请输入内容"
@@ -106,21 +112,20 @@
                         type="number"
                       ></el-input>
                       <el-input
-                        type="hidden"
                         name="node-id"
                         v-model="window.id"
                         id="hiddenInput"
+                        style="display:none"
                       ></el-input>
                     </el-form-item>
 
-                    <el-form-item label="矩阵维度"
+                    <el-form-item label="矩阵维度" v-show="window.dataType !='other'"
                       >{{ window.size }}
                     </el-form-item>
-                    <el-form-item label="文件上传">
+                    <el-form-item label="文件上传" >
                       <input
                         type="file"
                         name="file"
-                        accept=".txt"
                         :id="window.wid"
                         class="file"
                         @change="fileInfo(getFileContent, window)"
@@ -154,7 +159,7 @@
                 </el-dialog>
                 <!-- v-if="window.type === 'list'" -->
                 <el-dialog
-                  title="矩 阵"
+                  title="DataList"
                   v-model="window.nodeFormVisible"
                   v-else-if="window.type === 'list'"
                   center
@@ -290,11 +295,38 @@
                           >不进行处理</el-radio-button
                         >
                       </el-radio-group>
-                      <el-input
-                        type="hidden"
+                      
+                    </el-form-item>
+                    <el-input
                         name="lineFrom"
                         v-model="window.lineFrom"
+                        style="display:none"
                       ></el-input>
+                      <el-input
+                        name="dataType"
+                        v-model="window.type"
+                        style="display:none"
+                      ></el-input>
+                      <el-input
+                        name="nodeid"
+                        v-model="window.id"
+                        style="display:none"
+                      ></el-input>
+                    <el-form-item label="归一化操作" v-show="window.standardizing === 'normalization'">
+                      <el-radio-group v-model="window.normalization">
+                        <el-radio-button
+                          label="row"
+                          name="matNormalization"
+                          >行归一化</el-radio-button
+                        >
+                        <el-radio-button label="col" name="matNormalization"
+                          >列归一化</el-radio-button
+                        >
+                      </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="归一区间" v-show="window.standardizing === 'normalization'">
+                        [<el-input-number v-model="window.negNormalizationNum" size="small" step=0.01 name="negNormalizationNum" :label="window.negNormalizationNum" :max="window.posNormalizationNum"/>
+                        , <el-input-number v-model="window.posNormalizationNum" size="small" step="0.01" name="posNormalizationNum" :label="window.posNormalizationNum" :min="window.negNormalizationNum"/>]
                     </el-form-item>
                   </el-form>
                   <template #footer>
@@ -362,7 +394,7 @@ export default defineComponent({
     //对节点的全局计数
     const INDEX = ref(0);
     // nodeType
-    let uploadFilesType = ["txt", "csv", "zdy", "other"];
+    let uploadFilesType = ["txt", "csv", "zdy"];
     let transfrom = ["list", "mat"];
     let splice = ["col", "row"];
     //关于节点的属性设置
@@ -696,7 +728,9 @@ export default defineComponent({
         fileType: ref("py"),
         fileType2: ref("1"),
         standardizing: ref("none"),
-        normalization: ref("0"),
+        normalization: ref("col"),
+        posNormalizationNum: ref(0),
+        negNormalizationNum: ref(0),
         showData: ref(null),
         lineFrom: ref(null),
         FILE: reactive({
@@ -777,6 +811,7 @@ export default defineComponent({
             }
           } else if (node.type === "mat") {
             window.lineFrom = findLinefrom(window);
+            console.log("window.lineFrom", window.lineFrom);
           }
           break;
         }
