@@ -839,8 +839,8 @@ export default defineComponent({
             console.log("flowInfo.value.dataALL", res.data.rowjointdata);
             dataFromBack.value = res.data.rowjointdata;
           })
-          .catch(() => {
-            console.log("then");
+          .catch((e) => {
+            console.log("then", e);
           });
       });
     }
@@ -888,8 +888,8 @@ export default defineComponent({
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
-        // url: "http://127.0.0.1:5000",
-        url: "http://182.92.194.235:8000/users/register",
+        url: "http://127.0.0.1:5000",
+        // url: "http://182.92.194.235:8000/users/register",
         data: formData,
         cache: false,
         processData: false,
@@ -903,7 +903,8 @@ export default defineComponent({
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
-        url: "http://182.92.194.235:8000/users/register",
+        url: "http://127.0.0.1:5000",
+        // url: "http://182.92.194.235:8000/users/register",
         data: formData,
         cache: false,
         processData: false,
@@ -924,7 +925,8 @@ export default defineComponent({
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
-        url: "http://182.92.194.235:8000/users/register",
+        url: "http://127.0.0.1:5000",
+        // url: "http://182.92.194.235:8000/users/register",
         data: formData,
         cache: false,
         processData: false,
