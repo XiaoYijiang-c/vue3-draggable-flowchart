@@ -1,6 +1,6 @@
 <template>
   <!-- 主组件 -->
-  <div v-if="list.easyFlowVisible">
+  <div v-if="easyFlowVisible">
     <el-row>
       <el-col :span="3" ref="flowTool">
         <flowTool @addNode="addNode"></flowTool>
@@ -15,7 +15,7 @@
               >
               <el-button
                 type="primary"
-                @click="dataReloadA"
+                @click="dataReloadB"
                 icon="el-icon-refresh"
                 >清空</el-button
               >
@@ -34,7 +34,7 @@
             <div id="flowContainer" class="container" ref="efContainer">
               <template v-for="node in list.nodeList" :key="node.id">
                 <flow-node
-                  ref="nodes"
+                  :ref="nodes"
                   v-show="node.show"
                   :id="node.id"
                   :node="node"
@@ -364,7 +364,7 @@
     </el-row>
 
     <flow-info
-      v-if="list.flowInfoVisible"
+      v-if="flowInfoVisible"
       ref="flowInfo"
       :data="list"
     ></flow-info>
@@ -380,8 +380,9 @@ import flowTool from "@/components/tool";
 import FlowInfo from "@/components/info";
 import FlowConsoles from "@/components/consoles";
 import $ from "jquery";
-// import lodash from "lodash";
+import lodash from "lodash";
 import { getDataA } from "./data_A";
+import { getDataB } from "./data_B";
 
 export default defineComponent({
   name: "App",
@@ -393,6 +394,7 @@ export default defineComponent({
   },
   setup() {
     //获取子组件
+    console.log(getDataA, getDataB);
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
@@ -400,8 +402,14 @@ export default defineComponent({
     onMounted(() => {
       console.log("efContainer", efContainer.value);
     });
+    const itemRefs = ref([]);
 
-    const nodes = ref();
+    const nodes = (el) => {
+      if (el) {
+        itemRefs.value.push(el);
+      }
+    };
+
     //对节点的全局计数
     const INDEX = ref(0);
     // nodeType
@@ -409,15 +417,14 @@ export default defineComponent({
     let transfrom = ["list", "mat"];
     let splice = ["col", "row"];
     //关于节点的属性设置
-    const list = reactive({
+    let list = reactive({
       lineList: [],
       nodeList: [],
       windowList: [],
-      easyFlowVisible: true,
-      flowInfoVisible: false,
       index: 1,
     });
-
+    let easyFlowVisible = ref(true);
+    let flowInfoVisible = ref(false);
     // 关于jsplumb的设置
     const allJsPlumb = reactive({
       jsPlumb: null, // jsPlumb 实例
@@ -484,14 +491,25 @@ export default defineComponent({
       loadEasyFlowFinish: false,
     });
     //挂载 jsplumb 初始化画布
-    onMounted(() => {
-      allJsPlumb.jsPlumb = jsPlumb.getInstance();
-      nextTick(() => {
-        dataReloadA();
-      });
-    });
+    allJsPlumb.jsPlumb = jsPlumb.getInstance();
+    dataReloadA();
+    console.log(list);
+    // onMounted(() => {
+    //   allJsPlumb.jsPlumb = jsPlumb.getInstance();
+    //   nextTick(() => {
+    //     dataReloadA();
+    //   });
+    // });
     //绘制流程图
     function loadEasyFlow() {
+      itemRefs.value.forEach((item) => {
+        for (let node of list.nodeList) {
+          if (item.node.id == node.id) {
+            item.nodes.style.left = node.left;
+            item.nodes.style.top = node.top;
+          }
+        }
+      });
       for (var i = 0; i < list.nodeList.length; i++) {
         let node = list.nodeList[i];
         // 设置源点，可以拖出线连接其他节点
@@ -502,6 +520,17 @@ export default defineComponent({
         allJsPlumb.jsPlumb.draggable(node.id, {
           containment: "parent",
         });
+      }
+      for (let i = 0; i < list.lineList.length; i++) {
+        let line = list.lineList[i];
+        var connParam = {
+          source: line.from,
+          target: line.to,
+        };
+        allJsPlumb.jsPlumb.connect(
+          connParam,
+          allJsPlumb.jsPlumb.jsplumbConnectOptions
+        );
       }
       nextTick(() => {
         allJsPlumb.loadEasyFlowFinish = true;
@@ -760,8 +789,14 @@ export default defineComponent({
       INDEX.value++;
       // list = { 1: "1", 2: "2" };
       nextTick(() => {
-        nodes.value.nodes.style.left = node.left;
-        nodes.value.nodes.style.top = node.top;
+        itemRefs.value.forEach((item) => {
+          for (let node of list.nodeList) {
+            if (item.node.id == node.id) {
+              item.nodes.style.left = node.left;
+              item.nodes.style.top = node.top;
+            }
+          }
+        });
         console.log(typeof node.top);
         allJsPlumb.jsPlumb.makeSource(nodeId, allJsPlumb.jsplumbSourceOptions);
 
@@ -844,7 +879,7 @@ export default defineComponent({
     }
 
     function dataInfo() {
-      list.flowInfoVisible = true;
+      flowInfoVisible.value = true;
       nextTick(() => {
         flowInfo.value.init();
         flowInfo.value.dataAll
@@ -860,15 +895,21 @@ export default defineComponent({
     }
     //获取初始画布信息
     function dataReload(data) {
-      list.easyFlowVisible = false;
-      console.log("data", data);
-      // list.nodeList = [];
-      // list.lineList = [];
+      easyFlowVisible.value = false;
+
+      list.nodeList = [];
+      list.lineList = [];
       nextTick(() => {
         // 这里模拟后台获取数据、然后加载
-        // data = lodash.cloneDeep(data);
-        list.easyFlowVisible = true;
+        data = lodash.cloneDeep(data);
+        easyFlowVisible.value = true;
+        console.log("data", data);
+        console.log("list", list);
         // list = data;
+        list.lineList = data.lineList;
+        list.nodeList = data.nodeList;
+        list.windowList = data.windowList;
+        list.index = data.index;
         nextTick(() => {
           allJsPlumb.jsPlumb = jsPlumb.getInstance();
           nextTick(() => {
@@ -878,7 +919,12 @@ export default defineComponent({
       });
     }
     function dataReloadA() {
+      itemRefs.value = [];
       dataReload(getDataA());
+    }
+    function dataReloadB() {
+      itemRefs.value = [];
+      dataReload(getDataB());
     }
     function changeNodeName(window) {
       for (let node of list.nodeList) {
@@ -1026,6 +1072,8 @@ export default defineComponent({
     }
     return {
       fileInfo,
+      easyFlowVisible,
+      flowInfoVisible,
       FlowConsoles,
       getFileContent,
       handleClose,
@@ -1042,6 +1090,7 @@ export default defineComponent({
       editNode,
       dataInfo,
       dataReloadA,
+      dataReloadB,
       dataEncodingType: ref(null),
       uploadFiles,
       uploadFiles1,

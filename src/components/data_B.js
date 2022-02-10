@@ -1,4 +1,4 @@
-var data_A = {
+var data_B = {
     nodeList: [{
         ico: "el-icon-time",
         id: "node1",
@@ -14,7 +14,7 @@ var data_A = {
         left: "593px",
         name: "Data Table",
         show: true,
-        top: "20px",
+        top: "150px",
         type: "list",
         wid: 2,
     }],
@@ -26,8 +26,8 @@ var data_A = {
             nodeFormVisible: false,
             dataEncodingType: "oneHot",
             dataType: "DNA",
-            input: "100",
-            size: "100* 4",
+            input: "20",
+            size: "20* 4",
             FILE: {
                 file: {},
                 fileName: "",
@@ -45,6 +45,6 @@ var data_A = {
     index: 3,
 }
 
-export function getDataA() {
-    return data_A
+export function getDataB() {
+    return data_B
 }
