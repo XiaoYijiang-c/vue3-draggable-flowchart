@@ -295,7 +295,6 @@
                           >不进行处理</el-radio-button
                         >
                       </el-radio-group>
-                      
                     </el-form-item>
                     <el-input
                         name="lineFrom"
@@ -312,7 +311,7 @@
                         v-model="window.id"
                         style="display:none"
                       ></el-input>
-                    <el-form-item label="归一化操作" v-show="window.standardizing === 'normalization'">
+                    <el-form-item label="归一化" v-show="window.standardizing == 'normalization'">
                       <el-radio-group v-model="window.normalization">
                         <el-radio-button
                           label="row"
@@ -321,6 +320,18 @@
                         >
                         <el-radio-button label="col" name="matNormalization"
                           >列归一化</el-radio-button
+                        >
+                      </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="标准化" v-show="window.standardizing == 'standardization'">
+                      <el-radio-group v-model="window.standardization">
+                        <el-radio-button
+                          label="row"
+                          name="matstandardization"
+                          >行标准化</el-radio-button
+                        >
+                        <el-radio-button label="col" name="matstandardization"
+                          >列标准化</el-radio-button
                         >
                       </el-radio-group>
                     </el-form-item>
@@ -369,7 +380,7 @@ import flowTool from "@/components/tool";
 import FlowInfo from "@/components/info";
 import FlowConsoles from "@/components/consoles";
 import $ from "jquery";
-import lodash from "lodash";
+// import lodash from "lodash";
 import { getDataA } from "./data_A";
 
 export default defineComponent({
@@ -524,12 +535,14 @@ export default defineComponent({
             var node2 = list.nodeList[cnt];
             let nType1 = node1.type;
             let nType2 = node2.type;
+            console.log(splice, nType1, transfrom);
             if (node2.id === to) {
               if (uploadFilesType.includes(nType2)) {
                 // 上传节点不可互连 且不可被连接
                 return true;
               } else if (nType1 === "list") {
                 // list只能被连接
+                console.log(splice);
                 return true;
               } else if (
                 splice.includes(nType2) &&
@@ -539,12 +552,11 @@ export default defineComponent({
                 return true;
               } else if (
                 transfrom.includes(nType2) &&
-                !uploadFilesType.includes(nType1)
+                transfrom.includes(nType1)
               ) {
                 // 矩阵只能转换文件节点
                 return true;
               }
-              //
             }
           }
         }
@@ -660,8 +672,8 @@ export default defineComponent({
               type: "success",
             });
             if (isMAT(from, to)) {
-              console.log(nodeForm.value);
-              nodeForm.value.uploadFile();
+              // console.log(nodeForm.value);
+              // nodeForm.value.uploadFile();
             }
           }
           return true;
@@ -691,7 +703,7 @@ export default defineComponent({
     function addNode(evt, nodeMenu, mousePosition) {
       console.log("添加节点", evt, nodeMenu);
       console.log("flowTool.value", flowTool.value);
-      let width = flowTool.value.$el.clientWidth;
+      // let width = flowTool.value.$el.clientWidth;
       const index = list.index++;
       let nodeId = "node" + index;
       var left = evt.originalEvent.clientX;
@@ -728,6 +740,7 @@ export default defineComponent({
         fileType: ref("py"),
         fileType2: ref("1"),
         standardizing: ref("none"),
+        standardizion: ref("row"),
         normalization: ref("col"),
         posNormalizationNum: ref(0),
         negNormalizationNum: ref(0),
@@ -836,22 +849,24 @@ export default defineComponent({
         flowInfo.value.init();
         flowInfo.value.dataAll
           .then((res) => {
-            console.log("flowInfo.value.dataALL", res.data.rowjointdata);
+            // console.log("flowInfo.value.dataALL", res.data.rowjointdata);
+            console.log("flowInfo.value.dataALL", res.lineList);
             dataFromBack.value = res.data.rowjointdata;
           })
           .catch((e) => {
-            console.log("then", e);
+            console.log(e);
           });
       });
     }
     //获取初始画布信息
     function dataReload(data) {
       list.easyFlowVisible = false;
-      list.nodeList = [];
-      list.lineList = [];
+      console.log("data", data);
+      // list.nodeList = [];
+      // list.lineList = [];
       nextTick(() => {
         // 这里模拟后台获取数据、然后加载
-        data = lodash.cloneDeep(data);
+        // data = lodash.cloneDeep(data);
         list.easyFlowVisible = true;
         // list = data;
         nextTick(() => {
@@ -894,7 +909,9 @@ export default defineComponent({
         cache: false,
         processData: false,
         contentType: false,
-        success: (res) => {},
+        success: (res) => {
+          console.log(res);
+        },
       });
       changeNodeName(window);
     }
