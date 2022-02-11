@@ -28,7 +28,14 @@
             </div>
           </el-col>
         </el-row>
-        <el-row :span="21">
+        <el-row :span="3">
+          <el-col :span="24">
+            <div style="margin-bottom: 5px; margin-left: 10px">
+              ljl
+            </div>
+          </el-col>
+        </el-row>
+        <el-row :span="18">
           <el-col :span="24">
             <!--画布-->
             <div id="flowContainer" class="container" ref="efContainer">
@@ -371,7 +378,7 @@
   </div>
 </template>
 <script>
-import { defineComponent, reactive, onMounted, nextTick, ref } from "vue";
+import { defineComponent, reactive, nextTick, ref } from "vue";
 import { jsPlumb } from "jsplumb";
 import { ElMessageBox } from "element-plus";
 import { ElMessage } from "element-plus";
@@ -394,16 +401,15 @@ export default defineComponent({
   },
   setup() {
     //获取子组件
-    console.log(getDataA, getDataB);
+    // console.log(getDataA, getDataB);
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
-    const efContainer = ref(null);
-    onMounted(() => {
-      console.log("efContainer", efContainer.value);
-    });
+    // const efContainer = ref(null);
+    // onMounted(() => {
+    //   console.log("efContainer", efContainer.value);
+    // });
     const itemRefs = ref([]);
-
     const nodes = (el) => {
       if (el) {
         itemRefs.value.push(el);
@@ -493,15 +499,9 @@ export default defineComponent({
     //挂载 jsplumb 初始化画布
     allJsPlumb.jsPlumb = jsPlumb.getInstance();
     dataReloadA();
-    console.log(list);
-    // onMounted(() => {
-    //   allJsPlumb.jsPlumb = jsPlumb.getInstance();
-    //   nextTick(() => {
-    //     dataReloadA();
-    //   });
-    // });
     //绘制流程图
     function loadEasyFlow() {
+      // 初始化各个节点的位置
       itemRefs.value.forEach((item) => {
         for (let node of list.nodeList) {
           if (item.node.id == node.id) {
@@ -510,7 +510,8 @@ export default defineComponent({
           }
         }
       });
-      for (var i = 0; i < list.nodeList.length; i++) {
+      //绘制节点
+      for (let i = 0; i < list.nodeList.length; i++) {
         let node = list.nodeList[i];
         // 设置源点，可以拖出线连接其他节点
         allJsPlumb.jsPlumb.makeSource(node.id, allJsPlumb.jsplumbSourceOptions);
@@ -521,9 +522,10 @@ export default defineComponent({
           containment: "parent",
         });
       }
+      // 绘制线
       for (let i = 0; i < list.lineList.length; i++) {
         let line = list.lineList[i];
-        var connParam = {
+        let connParam = {
           source: line.from,
           target: line.to,
         };
@@ -545,8 +547,8 @@ export default defineComponent({
 
     //对是否连线的逻辑判断
     function hasLine(from, to) {
-      for (var i = 0; i < list.lineList.length; i++) {
-        var line = list.lineList[i];
+      for (let i = 0; i < list.lineList.length; i++) {
+        let line = list.lineList[i];
         if (line.from === from && line.to === to) {
           return true;
         }
@@ -557,11 +559,11 @@ export default defineComponent({
       return hasLine(to, from);
     }
     function hasProblem(from, to) {
-      for (var i = 0; i < list.nodeList.length; i++) {
-        var node1 = list.nodeList[i];
+      for (let i = 0; i < list.nodeList.length; i++) {
+        let node1 = list.nodeList[i];
         if (node1.id === from) {
-          for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
-            var node2 = list.nodeList[cnt];
+          for (let cnt = 0; cnt < list.nodeList.length; cnt++) {
+            let node2 = list.nodeList[cnt];
             let nType1 = node1.type;
             let nType2 = node2.type;
             console.log(splice, nType1, transfrom);
@@ -595,14 +597,14 @@ export default defineComponent({
     function limitDataTable(from, to) {
       console.log("to", to);
 
-      for (var i = 0; i < list.nodeList.length; i++) {
+      for (let i = 0; i < list.nodeList.length; i++) {
         if (list.nodeList[i].id == to) {
           if (
             list.nodeList[i].type === "list" ||
             list.nodeList[i].type === "mat"
           ) {
-            for (var cnt = 0; cnt < list.lineList.length; cnt++) {
-              var line = list.lineList[cnt];
+            for (let cnt = 0; cnt < list.lineList.length; cnt++) {
+              let line = list.lineList[cnt];
               if (line.to == to) {
                 return true;
               }
@@ -614,11 +616,11 @@ export default defineComponent({
       return false;
     }
     function isMAT(from, to) {
-      for (var i = 0; i < list.nodeList.length; i++) {
-        var node1 = list.nodeList[i];
+      for (let i = 0; i < list.nodeList.length; i++) {
+        let node1 = list.nodeList[i];
         if (node1.id === from) {
-          for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
-            var node2 = list.nodeList[cnt];
+          for (let cnt = 0; cnt < list.nodeList.length; cnt++) {
+            let node2 = list.nodeList[cnt];
             if (node2.id === to) {
               if (
                 (node1.type === "txt" && node2.type === "mat") ||
@@ -711,7 +713,7 @@ export default defineComponent({
     }
     //改变节点位置 实现可拖拽布局
     function changeNodeSite(data) {
-      for (var i = 0; i < list.nodeList.length; i++) {
+      for (let i = 0; i < list.nodeList.length; i++) {
         let node = list.nodeList[i];
         if (node.id === data.nodeId) {
           node.left = data.left;
@@ -719,9 +721,9 @@ export default defineComponent({
         }
       }
     }
-
+    // 对火狐浏览器兼容
     function isFirefox() {
-      var userAgent = navigator.userAgent;
+      let userAgent = navigator.userAgent;
       if (userAgent.indexOf("Firefox") > -1) {
         return true;
       }
@@ -735,8 +737,8 @@ export default defineComponent({
       // let width = flowTool.value.$el.clientWidth;
       const index = list.index++;
       let nodeId = "node" + index;
-      var left = evt.originalEvent.clientX;
-      var top = evt.originalEvent.clientY;
+      let left = evt.originalEvent.clientX;
+      let top = evt.originalEvent.clientY;
       //居中
       left -= 300;
       top -= 75;
@@ -749,7 +751,7 @@ export default defineComponent({
         top -= 25;
       }
 
-      var node = {
+      let node = {
         id: "node" + index,
         wid: index,
         name: nodeMenu.name,
@@ -759,7 +761,7 @@ export default defineComponent({
         ico: nodeMenu.ico,
         show: true,
       };
-      var window = {
+      let window = {
         id: "node" + index,
         wid: index,
         type: nodeMenu.type,
@@ -789,6 +791,7 @@ export default defineComponent({
       INDEX.value++;
       // list = { 1: "1", 2: "2" };
       nextTick(() => {
+        // 绘制添加的新节点
         itemRefs.value.forEach((item) => {
           for (let node of list.nodeList) {
             if (item.node.id == node.id) {
@@ -840,7 +843,7 @@ export default defineComponent({
       return false;
     }
     function editNode(node) {
-      for (var cnt = 0; cnt < list.nodeList.length; cnt++) {
+      for (let cnt = 0; cnt < list.nodeList.length; cnt++) {
         if (node.wid === list.windowList[cnt].wid) {
           let window = list.windowList[cnt];
           window.nodeFormVisible = true;
@@ -906,6 +909,11 @@ export default defineComponent({
         console.log("data", data);
         console.log("list", list);
         // list = data;
+        /*
+         原先的list = data list是reactive类型 而data是对象
+        直接赋值出现一堆bug
+        list丢失响应式
+         */
         list.lineList = data.lineList;
         list.nodeList = data.nodeList;
         list.windowList = data.windowList;
@@ -919,10 +927,12 @@ export default defineComponent({
       });
     }
     function dataReloadA() {
+      // 每次添加新的ref前都要置空
       itemRefs.value = [];
       dataReload(getDataA());
     }
     function dataReloadB() {
+      // 每次添加新的ref前都要置空
       itemRefs.value = [];
       dataReload(getDataB());
     }
@@ -945,7 +955,7 @@ export default defineComponent({
     }
     //上传文件
     function uploadFiles(window) {
-      var formData = new FormData($("#form" + window.wid)[0]);
+      let formData = new FormData($("#form" + window.wid)[0]);
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
@@ -962,7 +972,7 @@ export default defineComponent({
       changeNodeName(window);
     }
     function uploadFiles1(window) {
-      var formData = new FormData($("#form" + window.wid)[0]);
+      let formData = new FormData($("#form" + window.wid)[0]);
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
@@ -984,7 +994,7 @@ export default defineComponent({
       });
     }
     function uploadFiles2(window) {
-      var formData = new FormData($("#form" + window.wid)[0]);
+      let formData = new FormData($("#form" + window.wid)[0]);
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
@@ -1115,7 +1125,7 @@ p {
   background-size: 10px 10px;
   /* height: 900px; */
   background-color: rgb(251, 251, 251);
-  height: 650px;
+  height: 600px;
   /*background-color: #42b983;*/
   position: relative;
 }
