@@ -25,344 +25,355 @@
                 @click="addConsole"
                 >添加控制台</el-button
               >
+              <el-button size="small" @click="addTab(editableTabsValue)">
+                add tab
+              </el-button>
             </div>
           </el-col>
         </el-row>
-        <el-row :span="3">
-          <el-col :span="24">
-            <div style="margin-bottom: 5px; margin-left: 10px">
-              ljl
-            </div>
-          </el-col>
-        </el-row>
-        <el-row :span="18">
+        <el-row :span="21">
           <el-col :span="24">
             <!--画布-->
+            <el-tabs
+              v-model="editableTabsValue"
+              type="card"
+              class="demo-tabs"
+              closable
+              @tab-remove="removeTab"
+            >
+              <el-tab-pane
+                v-for="item in editableTabs"
+                :key="item.name"
+                :label="item.title"
+                :name="item.name"
+              >
+              </el-tab-pane>
+            </el-tabs>
             <div id="flowContainer" class="container" ref="efContainer">
-              <template v-for="node in list.nodeList" :key="node.id">
-                <flow-node
-                  :ref="nodes"
-                  v-show="node.show"
-                  :id="node.id"
-                  :node="node"
-                  @deleteNode="deleteNode(node)"
-                  @changeNodeSite="changeNodeSite"
-                  @editNode="editNode(node)"
-                >
-                </flow-node>
-              </template>
-              <template v-for="window in list.windowList" :key="window.wid">
-                <!-- v-if="window.type === 'txt'" -->
-                <el-dialog
-                  title="提示"
-                  v-model="window.nodeFormVisible"
-                  width="50%"
-                  :before-close="handleClose"
-                  v-if="
-                    window.type === 'txt' ||
-                    window.type === 'csv' 
-                  "
-                  center
-                >
-                  <el-form
-                    ref="dataForm"
-                    label-width="80px"
-                    :id="'form' + window.wid"
-                    @change="computeSize(window)"
-                  >
-                  <el-form-item label="数据类型">
-                      <el-radio
-                        v-model="window.dataType"
-                        label="DNA"
-                        name="dataType"
-                        >DNA</el-radio
+                  <template v-for="node in list.nodeList" :key="node.id">
+                    <flow-node
+                      :ref="nodes"
+                      v-show="node.show"
+                      :id="node.id"
+                      :node="node"
+                      @deleteNode="deleteNode(node)"
+                      @changeNodeSite="changeNodeSite"
+                      @editNode="editNode(node)"
+                    >
+                    </flow-node>
+                  </template>
+                  <template v-for="window in list.windowList" :key="window.wid">
+                    <!-- v-if="window.type === 'txt'" -->
+                    <el-dialog
+                      title="提示"
+                      v-model="window.nodeFormVisible"
+                      width="50%"
+                      :before-close="handleClose"
+                      v-if="
+                        window.type === 'txt' ||
+                        window.type === 'csv' 
+                      "
+                      center
+                    >
+                      <el-form
+                        ref="dataForm"
+                        label-width="80px"
+                        :id="'form' + window.wid"
+                        @change="computeSize(window)"
                       >
-                      <el-radio
-                        v-model="window.dataType"
-                        label="RNA"
-                        name="dataType"
-                        >RNA</el-radio
-                      >
-                      <el-radio
-                        v-model="window.dataType"
-                        label="protein"
-                        name="dataType"
-                        >protein</el-radio
-                      >
-                      <el-radio
-                        v-model="window.dataType"
-                        label="other"
-                        name="dataType"
-                        >other</el-radio
-                      >
-                    </el-form-item>
-                    <el-form-item label="编码类型" v-show="window.dataType !='other'">
-                      <el-radio
-                        v-model="window.dataEncodingType"
-                        label="dict"
-                        name="dataEncodingType"
-                        >dict</el-radio
-                      >
-                      <el-radio
-                        v-model="window.dataEncodingType"
-                        label="oneHot"
-                        name="dataEncodingType"
-                        >oneHot</el-radio
-                      >
-                    </el-form-item>
-                    
-                    <el-form-item label="Spclen" v-show="window.dataType !='other'">
-                      <el-input
-                        v-model="window.input"
-                        placeholder="请输入内容"
-                        name="Spclen"
-                        type="number"
-                      ></el-input>
-                      <el-input
-                        name="node-id"
-                        v-model="window.id"
-                        id="hiddenInput"
-                        style="display:none"
-                      ></el-input>
-                    </el-form-item>
+                      <el-form-item label="数据类型">
+                          <el-radio
+                            v-model="window.dataType"
+                            label="DNA"
+                            name="dataType"
+                            >DNA</el-radio
+                          >
+                          <el-radio
+                            v-model="window.dataType"
+                            label="RNA"
+                            name="dataType"
+                            >RNA</el-radio
+                          >
+                          <el-radio
+                            v-model="window.dataType"
+                            label="protein"
+                            name="dataType"
+                            >protein</el-radio
+                          >
+                          <el-radio
+                            v-model="window.dataType"
+                            label="other"
+                            name="dataType"
+                            >other</el-radio
+                          >
+                        </el-form-item>
+                        <el-form-item label="编码类型" v-show="window.dataType !='other'">
+                          <el-radio
+                            v-model="window.dataEncodingType"
+                            label="dict"
+                            name="dataEncodingType"
+                            >dict</el-radio
+                          >
+                          <el-radio
+                            v-model="window.dataEncodingType"
+                            label="oneHot"
+                            name="dataEncodingType"
+                            >oneHot</el-radio
+                          >
+                        </el-form-item>
+                        
+                        <el-form-item label="Spclen" v-show="window.dataType !='other'">
+                          <el-input
+                            v-model="window.input"
+                            placeholder="请输入内容"
+                            name="Spclen"
+                            type="number"
+                          ></el-input>
+                          <el-input
+                            name="node-id"
+                            v-model="window.id"
+                            id="hiddenInput"
+                            style="display:none"
+                          ></el-input>
+                        </el-form-item>
 
-                    <el-form-item label="矩阵维度" v-show="window.dataType !='other'"
-                      >{{ window.size }}
-                    </el-form-item>
-                    <el-form-item label="文件上传" >
-                      <input
-                        type="file"
-                        name="file"
-                        :id="window.wid"
-                        class="file"
-                        @change="fileInfo(getFileContent, window)"
-                        v-if="window.type === 'txt'"
-                      />
-                      <input
-                        type="file"
-                        name="file"
-                        accept=".csv"
-                        :id="window.wid"
-                        class="file"
-                        @change="fileInfo(getFileContent, window)"
-                        v-else-if="window.type === 'csv'"
-                      />
-                    </el-form-item>
-                  </el-form>
-                  <template #footer>
-                    <span class="dialog-footer">
-                      <el-button @click="window.nodeFormVisible = false"
-                        >取 消</el-button
-                      >
-                      <el-button
-                        type="primary"
-                        @click="
-                          (window.nodeFormVisible = false), uploadFiles(window)
-                        "
-                        >确 定</el-button
-                      >
-                    </span>
-                  </template>
-                </el-dialog>
-                <!-- v-if="window.type === 'list'" -->
-                <el-dialog
-                  title="DataList"
-                  v-model="window.nodeFormVisible"
-                  v-else-if="window.type === 'list'"
-                  center
-                  
-                >
-                  <el-scrollbar>
-                    <div v-if="window.showData != null">
-                      <!-- <p v-for="item in window.showData" :key="item">
-                        {{ item }}
-                      </p> -->
-                      <p class="listDataP"><pre>
-                        {{ window.showData }}
-                        </pre></p>
-                    </div>
-                    <div v-else><el-empty :image-size="200"></el-empty></div>
-                  </el-scrollbar>
-                </el-dialog>
-                <!-- v-if="window.type === 'zdy'" -->
-                <el-dialog
-                  title="上传自定义模型"
-                  class="zdy"
-                  v-model="window.nodeFormVisible"
-                  width="50%"
-                  :before-close="handleClose"
-                  v-else-if="window.type === 'zdy'"
-                  center
-                >
-                  <el-form
-                    ref="dataForm"
-                    label-width="140px"
-                    label-position="left"
-                    :id="'form' + window.wid"
-                    class="zdymodel"
-                  >
-                    <el-form-item label="文件类型">
-                      <el-radio-group v-model="window.fileType">
-                        <el-radio-button label="py" name="modelfiletype"
-                          >选择.py模型文件</el-radio-button
-                        >
-                        <el-radio-button label="json" name="modelfiletype"
-                          >选择.json模型文件</el-radio-button
-                        >
-                      </el-radio-group>
-                    </el-form-item>
-                    <el-form-item
-                      label=".py模型文件上传"
-                      v-show="window.fileType === 'py'"
+                        <el-form-item label="矩阵维度" v-show="window.dataType !='other'"
+                          >{{ window.size }}
+                        </el-form-item>
+                        <el-form-item label="文件上传" >
+                          <input
+                            type="file"
+                            name="file"
+                            :id="window.wid"
+                            class="file"
+                            @change="fileInfo(getFileContent, window)"
+                            v-if="window.type === 'txt'"
+                          />
+                          <input
+                            type="file"
+                            name="file"
+                            accept=".csv"
+                            :id="window.wid"
+                            class="file"
+                            @change="fileInfo(getFileContent, window)"
+                            v-else-if="window.type === 'csv'"
+                          />
+                        </el-form-item>
+                      </el-form>
+                      <template #footer>
+                        <span class="dialog-footer">
+                          <el-button @click="window.nodeFormVisible = false"
+                            >取 消</el-button
+                          >
+                          <el-button
+                            type="primary"
+                            @click="
+                              (window.nodeFormVisible = false), uploadFiles(window)
+                            "
+                            >确 定</el-button
+                          >
+                        </span>
+                      </template>
+                    </el-dialog>
+                    <!-- v-if="window.type === 'list'" -->
+                    <el-dialog
+                      title="DataList"
+                      v-model="window.nodeFormVisible"
+                      v-else-if="window.type === 'list'"
+                      center
+                      
                     >
-                      <input
-                        type="file"
-                        name="model"
-                        :id="window.wid"
-                        class="file"
-                        accept=".py"
-                        @change="fileInfo(getFileContent, window)"
-                      />
-                    </el-form-item>
-                    <el-form-item
-                      label=".json模型文件上传"
-                      v-show="window.fileType === 'json'"
+                      <el-scrollbar>
+                        <div v-if="window.showData != null">
+                          <!-- <p v-for="item in window.showData" :key="item">
+                            {{ item }}
+                          </p> -->
+                          <p class="listDataP"><pre>
+                            {{ window.showData }}
+                            </pre></p>
+                        </div>
+                        <div v-else><el-empty :image-size="200"></el-empty></div>
+                      </el-scrollbar>
+                    </el-dialog>
+                    <!-- v-if="window.type === 'zdy'" -->
+                    <el-dialog
+                      title="上传自定义模型"
+                      class="zdy"
+                      v-model="window.nodeFormVisible"
+                      width="50%"
+                      :before-close="handleClose"
+                      v-else-if="window.type === 'zdy'"
+                      center
                     >
-                      <input
-                        type="file"
-                        name="model"
-                        :id="window.wid"
-                        class="file"
-                        accept=".json"
-                        @change="fileInfo(getFileContent, window)"
-                      />
-                    </el-form-item>
-                    <el-form-item label="文件类型">
-                      <el-radio-group v-model="window.fileType2">
-                        <el-radio-button label="1" name="hasweight"
-                          >选择权重文件</el-radio-button
+                      <el-form
+                        ref="dataForm"
+                        label-width="140px"
+                        label-position="left"
+                        :id="'form' + window.wid"
+                        class="zdymodel"
+                      >
+                        <el-form-item label="文件类型">
+                          <el-radio-group v-model="window.fileType">
+                            <el-radio-button label="py" name="modelfiletype"
+                              >选择.py模型文件</el-radio-button
+                            >
+                            <el-radio-button label="json" name="modelfiletype"
+                              >选择.json模型文件</el-radio-button
+                            >
+                          </el-radio-group>
+                        </el-form-item>
+                        <el-form-item
+                          label=".py模型文件上传"
+                          v-show="window.fileType === 'py'"
                         >
-                        <el-radio-button label="0" name="hasweight"
-                          >不选择权重文件</el-radio-button
+                          <input
+                            type="file"
+                            name="model"
+                            :id="window.wid"
+                            class="file"
+                            accept=".py"
+                            @change="fileInfo(getFileContent, window)"
+                          />
+                        </el-form-item>
+                        <el-form-item
+                          label=".json模型文件上传"
+                          v-show="window.fileType === 'json'"
                         >
-                      </el-radio-group>
-                    </el-form-item>
-                    <el-form-item
-                      label="权重文件上传"
-                      v-show="window.fileType2 === '1'"
+                          <input
+                            type="file"
+                            name="model"
+                            :id="window.wid"
+                            class="file"
+                            accept=".json"
+                            @change="fileInfo(getFileContent, window)"
+                          />
+                        </el-form-item>
+                        <el-form-item label="文件类型">
+                          <el-radio-group v-model="window.fileType2">
+                            <el-radio-button label="1" name="hasweight"
+                              >选择权重文件</el-radio-button
+                            >
+                            <el-radio-button label="0" name="hasweight"
+                              >不选择权重文件</el-radio-button
+                            >
+                          </el-radio-group>
+                        </el-form-item>
+                        <el-form-item
+                          label="权重文件上传"
+                          v-show="window.fileType2 === '1'"
+                        >
+                          <input
+                            type="file"
+                            name="weight"
+                            :id="window.wid"
+                            class="file"
+                            @change="fileInfo(getFileContent, window)"
+                          />
+                        </el-form-item>
+                      </el-form>
+                      <template #footer>
+                        <span class="dialog-footer">
+                          <el-button @click="window.nodeFormVisible = false"
+                            >取 消</el-button
+                          >
+                          <el-button
+                            type="primary"
+                            @click="
+                              (window.nodeFormVisible = false), uploadFiles1(window)
+                            "
+                            >确 定</el-button
+                          >
+                        </span>
+                      </template>
+                    </el-dialog>
+                    <!-- v-if="window.type === 'mat'" -->
+                    <el-dialog
+                      title="矩 阵"
+                      v-model="window.nodeFormVisible"
+                      v-else-if="window.type === 'mat'"
+                      center
                     >
-                      <input
-                        type="file"
-                        name="weight"
-                        :id="window.wid"
-                        class="file"
-                        @change="fileInfo(getFileContent, window)"
-                      />
-                    </el-form-item>
-                  </el-form>
-                  <template #footer>
-                    <span class="dialog-footer">
-                      <el-button @click="window.nodeFormVisible = false"
-                        >取 消</el-button
+                      <el-form
+                        ref="dataForm"
+                        label-width="140px"
+                        label-position="left"
+                        :id="'form' + window.wid"
                       >
-                      <el-button
-                        type="primary"
-                        @click="
-                          (window.nodeFormVisible = false), uploadFiles1(window)
-                        "
-                        >确 定</el-button
-                      >
-                    </span>
+                        <el-form-item label="矩阵处理">
+                          <el-radio-group v-model="window.standardizing">
+                            <el-radio-button
+                              label="standardization"
+                              name="matHandle"
+                              >标准化</el-radio-button
+                            >
+                            <el-radio-button label="normalization" name="matHandle"
+                              >归一化</el-radio-button
+                            >
+                            <el-radio-button label="none" name="matHandle"
+                              >不进行处理</el-radio-button
+                            >
+                          </el-radio-group>
+                        </el-form-item>
+                        <el-input
+                            name="lineFrom"
+                            v-model="window.lineFrom"
+                            style="display:none"
+                          ></el-input>
+                          <el-input
+                            name="dataType"
+                            v-model="window.type"
+                            style="display:none"
+                          ></el-input>
+                          <el-input
+                            name="nodeid"
+                            v-model="window.id"
+                            style="display:none"
+                          ></el-input>
+                        <el-form-item label="归一化" v-show="window.standardizing == 'normalization'">
+                          <el-radio-group v-model="window.normalization">
+                            <el-radio-button
+                              label="row"
+                              name="matNormalization"
+                              >行归一化</el-radio-button
+                            >
+                            <el-radio-button label="col" name="matNormalization"
+                              >列归一化</el-radio-button
+                            >
+                          </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="标准化" v-show="window.standardizing == 'standardization'">
+                          <el-radio-group v-model="window.standardization">
+                            <el-radio-button
+                              label="row"
+                              name="matstandardization"
+                              >行标准化</el-radio-button
+                            >
+                            <el-radio-button label="col" name="matstandardization"
+                              >列标准化</el-radio-button
+                            >
+                          </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="归一区间" v-show="window.standardizing === 'normalization'">
+                            [<el-input-number v-model="window.negNormalizationNum" size="small" step=0.01 name="negNormalizationNum" :label="window.negNormalizationNum" :max="window.posNormalizationNum"/>
+                            , <el-input-number v-model="window.posNormalizationNum" size="small" step="0.01" name="posNormalizationNum" :label="window.posNormalizationNum" :min="window.negNormalizationNum"/>]
+                        </el-form-item>
+                      </el-form>
+                      <template #footer>
+                        <span class="dialog-footer">
+                          <el-button @click="window.nodeFormVisible = false"
+                            >取 消</el-button
+                          >
+                          <el-button
+                            type="primary"
+                            @click="
+                              (window.nodeFormVisible = false), uploadFiles2(window)
+                            "
+                            >确 定</el-button
+                          >
+                        </span>
+                      </template>
+                    </el-dialog>
                   </template>
-                </el-dialog>
-                <!-- v-if="window.type === 'mat'" -->
-                <el-dialog
-                  title="矩 阵"
-                  v-model="window.nodeFormVisible"
-                  v-else-if="window.type === 'mat'"
-                  center
-                >
-                  <el-form
-                    ref="dataForm"
-                    label-width="140px"
-                    label-position="left"
-                    :id="'form' + window.wid"
-                  >
-                    <el-form-item label="矩阵处理">
-                      <el-radio-group v-model="window.standardizing">
-                        <el-radio-button
-                          label="standardization"
-                          name="matHandle"
-                          >标准化</el-radio-button
-                        >
-                        <el-radio-button label="normalization" name="matHandle"
-                          >归一化</el-radio-button
-                        >
-                        <el-radio-button label="none" name="matHandle"
-                          >不进行处理</el-radio-button
-                        >
-                      </el-radio-group>
-                    </el-form-item>
-                    <el-input
-                        name="lineFrom"
-                        v-model="window.lineFrom"
-                        style="display:none"
-                      ></el-input>
-                      <el-input
-                        name="dataType"
-                        v-model="window.type"
-                        style="display:none"
-                      ></el-input>
-                      <el-input
-                        name="nodeid"
-                        v-model="window.id"
-                        style="display:none"
-                      ></el-input>
-                    <el-form-item label="归一化" v-show="window.standardizing == 'normalization'">
-                      <el-radio-group v-model="window.normalization">
-                        <el-radio-button
-                          label="row"
-                          name="matNormalization"
-                          >行归一化</el-radio-button
-                        >
-                        <el-radio-button label="col" name="matNormalization"
-                          >列归一化</el-radio-button
-                        >
-                      </el-radio-group>
-                    </el-form-item>
-                    <el-form-item label="标准化" v-show="window.standardizing == 'standardization'">
-                      <el-radio-group v-model="window.standardization">
-                        <el-radio-button
-                          label="row"
-                          name="matstandardization"
-                          >行标准化</el-radio-button
-                        >
-                        <el-radio-button label="col" name="matstandardization"
-                          >列标准化</el-radio-button
-                        >
-                      </el-radio-group>
-                    </el-form-item>
-                    <el-form-item label="归一区间" v-show="window.standardizing === 'normalization'">
-                        [<el-input-number v-model="window.negNormalizationNum" size="small" step=0.01 name="negNormalizationNum" :label="window.negNormalizationNum" :max="window.posNormalizationNum"/>
-                        , <el-input-number v-model="window.posNormalizationNum" size="small" step="0.01" name="posNormalizationNum" :label="window.posNormalizationNum" :min="window.negNormalizationNum"/>]
-                    </el-form-item>
-                  </el-form>
-                  <template #footer>
-                    <span class="dialog-footer">
-                      <el-button @click="window.nodeFormVisible = false"
-                        >取 消</el-button
-                      >
-                      <el-button
-                        type="primary"
-                        @click="
-                          (window.nodeFormVisible = false), uploadFiles2(window)
-                        "
-                        >确 定</el-button
-                      >
-                    </span>
-                  </template>
-                </el-dialog>
-              </template>
             </div>
           </el-col>
         </el-row>
@@ -431,6 +442,45 @@ export default defineComponent({
     });
     let easyFlowVisible = ref(true);
     let flowInfoVisible = ref(false);
+    // 关于标签栏的设置
+    let tabIndex = 2;
+    const editableTabsValue = ref("2");
+    const editableTabs = ref([
+      {
+        title: "Tab 1",
+        name: "1",
+      },
+      {
+        title: "Tab 2",
+        name: "2",
+      },
+    ]);
+    const addTab = (targetName) => {
+      const newTabName = `${++tabIndex}`;
+      console.log("targetName", targetName);
+      editableTabs.value.push({
+        title: "New Tab",
+        name: newTabName,
+        content: "New Tab content",
+      });
+      editableTabsValue.value = newTabName;
+    };
+    const removeTab = (targetName) => {
+      const tabs = editableTabs.value;
+      let activeName = editableTabsValue.value;
+      if (activeName === targetName) {
+        tabs.forEach((tab, index) => {
+          if (tab.name === targetName) {
+            const nextTab = tabs[index + 1] || tabs[index - 1];
+            if (nextTab) {
+              activeName = nextTab.name;
+            }
+          }
+        });
+      }
+      editableTabsValue.value = activeName;
+      editableTabs.value = tabs.filter((tab) => tab.name !== targetName);
+    };
     // 关于jsplumb的设置
     const allJsPlumb = reactive({
       jsPlumb: null, // jsPlumb 实例
@@ -1081,6 +1131,10 @@ export default defineComponent({
       FlowConsoles.value.addConsoleList();
     }
     return {
+      editableTabs,
+      editableTabsValue,
+      addTab,
+      removeTab,
       fileInfo,
       easyFlowVisible,
       flowInfoVisible,
@@ -1193,5 +1247,12 @@ p {
 }
 .listDataP {
   height: 300px;
+}
+.demo-tabs > .el-tabs__content {
+  padding: 0px;
+  background-color: rgb(251, 251, 251);
+  color: rgb(251, 251, 251);
+  font-size: 12px;
+  font-weight: 600;
 }
 </style>
