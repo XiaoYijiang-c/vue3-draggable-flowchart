@@ -183,7 +183,12 @@ export default defineComponent({
   vertical-align: middle;
   border-bottom: 1px solid #d3d3d3;
 }
-
+.el-submenu .el-menu-item {
+  height: 50px;
+  line-height: 50px;
+  padding: 0 45px;
+  min-width: 180px !important;
+}
 li {
   width: 100%;
 }

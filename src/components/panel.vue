@@ -1249,10 +1249,16 @@ p {
   height: 300px;
 }
 .demo-tabs > .el-tabs__content {
+  z-index: 2000;
   padding: 0px;
   background-color: rgb(251, 251, 251);
   color: rgb(251, 251, 251);
   font-size: 12px;
   font-weight: 600;
+}
+.el-tabs__header {
+  padding: 0;
+  position: relative;
+  margin: 0 0 0px !important;
 }
 </style>
