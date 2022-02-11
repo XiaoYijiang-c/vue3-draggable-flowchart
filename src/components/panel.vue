@@ -791,7 +791,7 @@ export default defineComponent({
       let top = evt.originalEvent.clientY;
       //居中
       left -= 300;
-      top -= 75;
+      top -= 120;
       if (isFirefox()) {
         console.log("INFIREFOX");
         left = mousePosition.left;
