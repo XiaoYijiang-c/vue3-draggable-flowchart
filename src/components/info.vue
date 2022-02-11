@@ -13,8 +13,8 @@ export default defineComponent({
     data: Object,
   },
   setup(props) {
-    const open = () => {
-      ElMessageBox.alert("流程上传成功", "流程上传成功", {
+    const open = (tip) => {
+      ElMessageBox.alert("流程上传" + tip, "流程上传" + tip, {
         confirmButtonText: "确定",
       });
     };
@@ -23,7 +23,7 @@ export default defineComponent({
 
     function init() {
       dataAll.value = uploadData();
-      open();
+
       console.log("111", dataAll.value.then);
     }
     const { proxy } = getCurrentInstance();
@@ -31,11 +31,13 @@ export default defineComponent({
       var newDatas = Object.assign({}, props.data);
       delete newDatas.windowList;
       var response = await proxy.$axios
-        .post("http://127.0.0.1:5000", newDatas) // 网络请求
+        .post("http://182.92.194.235:8000/users/register", newDatas) // 网络请求
         .then((res) => {
+          if (res) open("成功");
           return res;
         })
-        .catch(() => {
+        .catch((e) => {
+          if (e) open("失败");
           /* */
         });
       return response;

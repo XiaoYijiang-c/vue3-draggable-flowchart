@@ -10,7 +10,7 @@
           <el-col :span="24">
             <div style="margin-bottom: 5px; margin-left: 10px">
               <el-link type="primary">{{ list.name }}</el-link>
-              <el-button type="info" icon="el-icon-document" @click="dataInfo"
+              <el-button type="info" icon="el-icon-document" @click="uploadFiles"
                 >上传流程</el-button
               >
               <el-button
@@ -25,7 +25,7 @@
                 @click="addConsole"
                 >添加控制台</el-button
               >
-              <el-button size="small" @click="addTab(editableTabsValue)">
+              <el-button type="info" @click="addTab(editableTabsValue)">
                 add tab
               </el-button>
             </div>
@@ -46,6 +46,7 @@
                 :key="item.name"
                 :label="item.title"
                 :name="item.name"
+                
               >
               </el-tab-pane>
             </el-tabs>
@@ -64,6 +65,7 @@
                   </template>
                   <template v-for="window in list.windowList" :key="window.wid">
                     <!-- v-if="window.type === 'txt'" -->
+                    
                     <el-dialog
                       title="提示"
                       v-model="window.nodeFormVisible"
@@ -76,6 +78,7 @@
                       center
                     >
                       <el-form
+                        class="form"
                         ref="dataForm"
                         label-width="80px"
                         :id="'form' + window.wid"
@@ -168,18 +171,20 @@
                           <el-button
                             type="primary"
                             @click="
-                              (window.nodeFormVisible = false), uploadFiles(window)
+                              (window.nodeFormVisible = false), changeNodeName(window)
                             "
                             >确 定</el-button
                           >
                         </span>
                       </template>
                     </el-dialog>
+                    
                     <!-- v-if="window.type === 'list'" -->
+                    
                     <el-dialog
                       title="DataList"
                       v-model="window.nodeFormVisible"
-                      v-else-if="window.type === 'list'"
+                      v-if="window.type === 'list'"
                       center
                       
                     >
@@ -195,14 +200,16 @@
                         <div v-else><el-empty :image-size="200"></el-empty></div>
                       </el-scrollbar>
                     </el-dialog>
+                    
                     <!-- v-if="window.type === 'zdy'" -->
+                    
                     <el-dialog
                       title="上传自定义模型"
                       class="zdy"
                       v-model="window.nodeFormVisible"
                       width="50%"
                       :before-close="handleClose"
-                      v-else-if="window.type === 'zdy'"
+                      v-if="window.type === 'zdy'"
                       center
                     >
                       <el-form
@@ -210,7 +217,7 @@
                         label-width="140px"
                         label-position="left"
                         :id="'form' + window.wid"
-                        class="zdymodel"
+                        class="form"
                       >
                         <el-form-item label="文件类型">
                           <el-radio-group v-model="window.fileType">
@@ -279,21 +286,24 @@
                           <el-button
                             type="primary"
                             @click="
-                              (window.nodeFormVisible = false), uploadFiles1(window)
+                              (window.nodeFormVisible = false)
                             "
                             >确 定</el-button
                           >
                         </span>
                       </template>
                     </el-dialog>
+                    
                     <!-- v-if="window.type === 'mat'" -->
+                    
                     <el-dialog
                       title="矩 阵"
                       v-model="window.nodeFormVisible"
-                      v-else-if="window.type === 'mat'"
+                      v-if="window.type === 'mat'"
                       center
                     >
                       <el-form
+                        class="form"
                         ref="dataForm"
                         label-width="140px"
                         label-position="left"
@@ -366,13 +376,14 @@
                           <el-button
                             type="primary"
                             @click="
-                              (window.nodeFormVisible = false), uploadFiles2(window)
+                              (window.nodeFormVisible = false)
                             "
                             >确 定</el-button
                           >
                         </span>
                       </template>
                     </el-dialog>
+                    
                   </template>
             </div>
           </el-col>
@@ -401,6 +412,7 @@ import $ from "jquery";
 import lodash from "lodash";
 import { getDataA } from "./data_A";
 import { getDataB } from "./data_B";
+import axios from "axios";
 
 export default defineComponent({
   name: "App",
@@ -444,15 +456,23 @@ export default defineComponent({
     let flowInfoVisible = ref(false);
     // 关于标签栏的设置
     let tabIndex = 2;
-    const editableTabsValue = ref("2");
+    const editableTabsValue = ref("1");
     const editableTabs = ref([
       {
         title: "Tab 1",
         name: "1",
+        fuc: () => {
+          dataReloadA();
+          console.log("FUC");
+        },
       },
       {
         title: "Tab 2",
         name: "2",
+        fuc: () => {
+          dataReloadB();
+          console.log("FUC");
+        },
       },
     ]);
     const addTab = (targetName) => {
@@ -555,6 +575,9 @@ export default defineComponent({
       itemRefs.value.forEach((item) => {
         for (let node of list.nodeList) {
           if (item.node.id == node.id) {
+            console.log("item", item);
+            // item.editNode();
+            // item.editNode();
             item.nodes.style.left = node.left;
             item.nodes.style.top = node.top;
           }
@@ -563,6 +586,8 @@ export default defineComponent({
       //绘制节点
       for (let i = 0; i < list.nodeList.length; i++) {
         let node = list.nodeList[i];
+        // let window = list.windowList[i];
+        // window.nodeFormVisible = false;
         // 设置源点，可以拖出线连接其他节点
         allJsPlumb.jsPlumb.makeSource(node.id, allJsPlumb.jsplumbSourceOptions);
         // // 设置目标点，其他源点拖出的线可以连接该节点
@@ -798,7 +823,7 @@ export default defineComponent({
         top = mousePosition.top;
         //居中
         left -= 100;
-        top -= 25;
+        top -= 75;
       }
 
       let node = {
@@ -850,6 +875,7 @@ export default defineComponent({
             }
           }
         });
+
         console.log(typeof node.top);
         allJsPlumb.jsPlumb.makeSource(nodeId, allJsPlumb.jsplumbSourceOptions);
 
@@ -1004,14 +1030,28 @@ export default defineComponent({
       }
     }
     //上传文件
-    function uploadFiles(window) {
-      let formData = new FormData($("#form" + window.wid)[0]);
-      console.log("formData", window.wid);
+    function uploadFiles() {
+      let formdata = new FormData();
+      for (let i = 0; i < $(".form").length; i++) {
+        let formData = new FormData($(".form")[i]);
+        // console.log("formData.get('file')", );
+        formData.forEach((value, key) => {
+          formdata.append("node[" + i + "][" + key + "]", value);
+          console.log(i, key, ":", value);
+        });
+
+        formdata.append("file[]", formData.get("file"));
+      }
+      console.log("formdata", formdata.getAll("file[]"));
+      // console.log("formdata", formdata.getAll("node[]"));
+      console.log("Wid", $(".form"));
+
       $.ajax({
         type: "post",
-        url: "http://127.0.0.1:5000",
-        // url: "http://182.92.194.235:8000/users/register",
-        data: formData,
+        // url: "http://127.0.0.1:5000",
+        url: "http://182.92.194.235:8000/users/register",
+        data: formdata,
+        traditional: true,
         cache: false,
         processData: false,
         contentType: false,
@@ -1019,7 +1059,14 @@ export default defineComponent({
           console.log(res);
         },
       });
-      changeNodeName(window);
+      let datas = {};
+      datas.lineList = list.lineList;
+      datas.nodeList = list.nodeList;
+      axios
+        .post("http://182.92.194.235:8000/users/register", datas)
+        .then((res) => {
+          console.log(res);
+        });
     }
     function uploadFiles1(window) {
       let formData = new FormData($("#form" + window.wid)[0]);
@@ -1161,6 +1208,7 @@ export default defineComponent({
       uploadFiles2,
       dataFromBack,
       addConsole,
+      changeNodeName,
     };
   },
 });
