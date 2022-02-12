@@ -25,8 +25,11 @@
                 @click="addConsole"
                 >添加控制台</el-button
               >
-              <el-button type="info" @click="addTab(editableTabsValue)">
-                add tab
+              <el-button type="info" @click="openAddtab">
+                添加实验
+              </el-button>
+              <el-button type="success" @click="save">
+                保存当前实验
               </el-button>
             </div>
           </el-col>
@@ -40,6 +43,8 @@
               class="demo-tabs"
               closable
               @tab-remove="removeTab"
+              @tab-click="tested(editableTabsValue)"
+              :before-leave="tes"
             >
               <el-tab-pane
                 v-for="item in editableTabs"
@@ -50,6 +55,17 @@
               >
               </el-tab-pane>
             </el-tabs>
+            <el-dialog v-model="newTabdialogVisible" title="Tips" width="30%" draggable destroy-on-close>
+            <el-input v-model="newtabinput" placeholder="请输入新tab name"></el-input>
+              <template #footer>
+                <span class="dialog-footer">
+                  <el-button @click="newTabdialogVisible = false">Cancel</el-button>
+                  <el-button type="primary" @click="addTab"
+                    >Confirm</el-button
+                  >
+                </span>
+              </template>
+            </el-dialog>
             <div id="flowContainer" class="container" ref="efContainer">
                   <template v-for="node in list.nodeList" :key="node.id">
                     <flow-node
@@ -64,8 +80,7 @@
                     </flow-node>
                   </template>
                   <template v-for="window in list.windowList" :key="window.wid">
-                    <!-- v-if="window.type === 'txt'" -->
-                    
+                    <!-- v-if="window.type === 'txt'" -->                    
                     <el-dialog
                       title="提示"
                       v-model="window.nodeFormVisible"
@@ -177,10 +192,8 @@
                           >
                         </span>
                       </template>
-                    </el-dialog>
-                    
-                    <!-- v-if="window.type === 'list'" -->
-                    
+                    </el-dialog>                    
+                    <!-- v-if="window.type === 'list'" -->                    
                     <el-dialog
                       title="DataList"
                       v-model="window.nodeFormVisible"
@@ -199,10 +212,8 @@
                         </div>
                         <div v-else><el-empty :image-size="200"></el-empty></div>
                       </el-scrollbar>
-                    </el-dialog>
-                    
-                    <!-- v-if="window.type === 'zdy'" -->
-                    
+                    </el-dialog>                    
+                    <!-- v-if="window.type === 'zdy'" -->                    
                     <el-dialog
                       title="上传自定义模型"
                       class="zdy"
@@ -278,6 +289,7 @@
                           />
                         </el-form-item>
                       </el-form>
+                      <div class="jzbutton"><el-button size="small" @click="uploadfiles2">检查模型</el-button></div>
                       <template #footer>
                         <span class="dialog-footer">
                           <el-button @click="window.nodeFormVisible = false"
@@ -292,10 +304,8 @@
                           >
                         </span>
                       </template>
-                    </el-dialog>
-                    
-                    <!-- v-if="window.type === 'mat'" -->
-                    
+                    </el-dialog>                    
+                    <!-- v-if="window.type === 'mat'" -->                    
                     <el-dialog
                       title="矩 阵"
                       v-model="window.nodeFormVisible"
@@ -382,8 +392,7 @@
                           >
                         </span>
                       </template>
-                    </el-dialog>
-                    
+                    </el-dialog>                   
                   </template>
             </div>
           </el-col>
@@ -425,6 +434,7 @@ export default defineComponent({
   setup() {
     //获取子组件
     // console.log(getDataA, getDataB);
+
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
@@ -438,7 +448,6 @@ export default defineComponent({
         itemRefs.value.push(el);
       }
     };
-
     //对节点的全局计数
     const INDEX = ref(0);
     // nodeType
@@ -455,35 +464,87 @@ export default defineComponent({
     let easyFlowVisible = ref(true);
     let flowInfoVisible = ref(false);
     // 关于标签栏的设置
-    let tabIndex = 2;
+    // let tabIndex = 2;
     const editableTabsValue = ref("1");
+    const newTabdialogVisible = ref(false);
+    const newtabinput = ref(null);
     const editableTabs = ref([
-      {
+      reactive({
         title: "Tab 1",
         name: "1",
-        fuc: () => {
-          dataReloadA();
-          console.log("FUC");
-        },
-      },
-      {
+        isSave: false,
+      }),
+      reactive({
         title: "Tab 2",
         name: "2",
-        fuc: () => {
-          dataReloadB();
-          console.log("FUC");
-        },
-      },
+        isSave: false,
+      }),
     ]);
-    const addTab = (targetName) => {
-      const newTabName = `${++tabIndex}`;
-      console.log("targetName", targetName);
-      editableTabs.value.push({
-        title: "New Tab",
-        name: newTabName,
-        content: "New Tab content",
-      });
-      editableTabsValue.value = newTabName;
+    function ChangeTag() {
+      for (let v of editableTabs.value) {
+        if (v.name == editableTabsValue.value) {
+          v.isSave = false;
+          console.log("changetag", v.isSave);
+          break;
+        }
+      }
+    }
+    function save() {
+      let data = {
+        type: save,
+        list: list,
+      };
+      axios
+        .post("http://182.92.194.235:8000/users/register", data)
+        .then((res) => {
+          console.log("http://182.92.194.235:8000/users/register", res);
+          for (let v of editableTabs.value) {
+            if (v.name == editableTabsValue.value) {
+              v.isSave = true;
+              console.log("save", v.isSave);
+              break;
+            }
+          }
+        });
+    }
+    function openAddtab() {
+      newTabdialogVisible.value = true;
+    }
+    const addTab = () => {
+      let flag = true;
+      console.log("addTab");
+
+      if (newtabinput.value == null) {
+        console.log("addFalse");
+        newTabdialogVisible.value = false;
+        flag = false;
+        ElMessageBox.alert("未输入新tab name", "错误", {
+          type: "warning",
+          confirmButtonText: "确定",
+        });
+      }
+      const newTabName = newtabinput.value;
+      newtabinput.value = null;
+      axios
+        .post("http://182.92.194.235:8000/users/register", newTabName)
+        .then((res) => {
+          console.log("newTabName", res);
+          if (flag) {
+            editableTabs.value.push(
+              reactive({
+                title: newTabName,
+                name: newTabName,
+                isSave: false,
+              })
+            );
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+
+      newTabdialogVisible.value = false;
+      // editableTabsValue.value = newTabName;
     };
     const removeTab = (targetName) => {
       const tabs = editableTabs.value;
@@ -501,6 +562,23 @@ export default defineComponent({
       editableTabsValue.value = activeName;
       editableTabs.value = tabs.filter((tab) => tab.name !== targetName);
     };
+    function tested(item) {
+      console.log("tested", item);
+    }
+    function tes(activeName, oldActiveName) {
+      for (let v of editableTabs.value) {
+        if (v.name == oldActiveName && v.isSave == false) {
+          ElMessageBox.confirm("未保存流程，是否保存？")
+            .then(() => {
+              save();
+            })
+            .catch(() => {
+              // catch
+            });
+          return false;
+        }
+      }
+    }
     // 关于jsplumb的设置
     const allJsPlumb = reactive({
       jsPlumb: null, // jsPlumb 实例
@@ -615,6 +693,7 @@ export default defineComponent({
     }
     //删除线
     function deleteLine(from, to) {
+      ChangeTag();
       list.lineList = list.lineList.filter(function (line) {
         return line.from !== from && line.to !== to;
       });
@@ -788,6 +867,7 @@ export default defineComponent({
     }
     //改变节点位置 实现可拖拽布局
     function changeNodeSite(data) {
+      ChangeTag();
       for (let i = 0; i < list.nodeList.length; i++) {
         let node = list.nodeList[i];
         if (node.id === data.nodeId) {
@@ -807,6 +887,7 @@ export default defineComponent({
 
     //添加节点
     function addNode(evt, nodeMenu, mousePosition) {
+      ChangeTag();
       console.log("添加节点", evt, nodeMenu);
       console.log("flowTool.value", flowTool.value);
       // let width = flowTool.value.$el.clientWidth;
@@ -888,6 +969,7 @@ export default defineComponent({
     }
     //删除节点
     function deleteNode(Node) {
+      ChangeTag();
       ElMessageBox("确定要删除节点" + Node.id + "?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -919,6 +1001,7 @@ export default defineComponent({
       return false;
     }
     function editNode(node) {
+      ChangeTag();
       for (let cnt = 0; cnt < list.nodeList.length; cnt++) {
         if (node.wid === list.windowList[cnt].wid) {
           let window = list.windowList[cnt];
@@ -1048,7 +1131,7 @@ export default defineComponent({
 
       $.ajax({
         type: "post",
-        // url: "http://127.0.0.1:5000",
+        // url: "http://182.92.194.235:8000/users/register",
         url: "http://182.92.194.235:8000/users/register",
         data: formdata,
         traditional: true,
@@ -1073,7 +1156,7 @@ export default defineComponent({
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
-        url: "http://127.0.0.1:5000",
+        url: "http://182.92.194.235:8000/users/register",
         // url: "http://182.92.194.235:8000/users/register",
         data: formData,
         cache: false,
@@ -1095,7 +1178,7 @@ export default defineComponent({
       console.log("formData", window.wid);
       $.ajax({
         type: "post",
-        url: "http://127.0.0.1:5000",
+        url: "http://182.92.194.235:8000/users/register",
         // url: "http://182.92.194.235:8000/users/register",
         data: formData,
         cache: false,
@@ -1181,6 +1264,9 @@ export default defineComponent({
       editableTabs,
       editableTabsValue,
       addTab,
+      newTabdialogVisible,
+      newtabinput,
+      openAddtab,
       removeTab,
       fileInfo,
       easyFlowVisible,
@@ -1209,6 +1295,9 @@ export default defineComponent({
       dataFromBack,
       addConsole,
       changeNodeName,
+      tested,
+      tes,
+      save,
     };
   },
 });
@@ -1308,5 +1397,10 @@ p {
   padding: 0;
   position: relative;
   margin: 0 0 0px !important;
+}
+.jzbutton {
+  display: flex;
+  align-items: center;
+  justify-self: center;
 }
 </style>
