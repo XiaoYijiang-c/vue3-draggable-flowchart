@@ -1,39 +1,56 @@
 <template>
-  <div style="background-color: #66a6e0" ref="tool">
-    <el-menu :default-openeds="dataBase.defaultOpeneds">
-      <el-submenu
-        v-for="(menu, index) in dataBase.menuList"
-        :index="menu.type + index"
-        :key="menu.type + index"
-      >
-        <template #title>
-          <i :class="menu.ico"></i>
-          <span>{{ menu.name }}</span>
-        </template>
-        <!--一级菜单名称、不可拖拽 -->
+  <div ref="tool" class="tool">
+    <div>
+      <el-menu :default-openeds="dataBase.defaultOpeneds" unique-opened="true">
+        <el-submenu
+          v-for="(menu, index) in dataBase.menuList"
+          :index="menu.type + index"
+          :key="menu.type + index"
+        >
+          <template #title>
+            <i :class="menu.ico"></i>
+            <span>{{ menu.name }}</span>
+          </template>
+          <!--一级菜单名称、不可拖拽 -->
 
-        <!--一级菜单子菜单、可拖拽菜单-->
-        <el-menu-item-group>
-          <draggable
-            @end="addNode"
-            @choose="move"
-            :list="menu.children"
-            item-key="name"
-            :options="dataBase.draggableOptions"
+          <!--一级菜单子菜单、可拖拽菜单-->
+          <el-menu-item-group>
+            <draggable
+              @end="addNode"
+              @choose="move"
+              :list="menu.children"
+              item-key="name"
+              :options="dataBase.draggableOptions"
+            >
+              <template #item="{ element }">
+                <el-menu-item
+                  :index="element.type"
+                  :key="element.type"
+                  :type="element.type"
+                >
+                  <i :class="element.ico"></i>{{ element.name }}
+                </el-menu-item>
+              </template>
+            </draggable>
+          </el-menu-item-group>
+        </el-submenu>
+        <el-submenu
+          v-for="(menu, index) in tabsList.menuList"
+          :index="menu.type + index + 3"
+          :key="menu.type + index"
+        >
+          <template #title>
+            <span>{{ menu.name }}</span>
+          </template>
+          <el-menu-item
+            v-for="(item, index) in menu.children"
+            :key="item.type + index"
+            :index="item.type + index"
+            >{{ item.name }}</el-menu-item
           >
-            <template #item="{ element }">
-              <el-menu-item
-                :index="element.type"
-                :key="element.type"
-                :type="element.type"
-              >
-                <i :class="element.ico"></i>{{ element.name }}
-              </el-menu-item>
-            </template>
-          </draggable>
-        </el-menu-item-group>
-      </el-submenu>
-    </el-menu>
+        </el-submenu>
+      </el-menu>
+    </div>
   </div>
 </template>
 <script>
@@ -115,6 +132,26 @@ export default defineComponent({
       ],
       nodeMenu: {},
     });
+    const tabsList = reactive({
+      draggableOptions: {
+        preventOnFilter: false,
+      },
+      defaultOpeneds: ["group0", "group1"],
+      menuList: [
+        {
+          name: "tabList",
+          type: "group",
+          children: [],
+        },
+      ],
+    });
+    function addTabs(name) {
+      let Tab = {
+        type: "tab",
+        name: name,
+      };
+      tabsList.menuList[0].children.push(Tab);
+    }
     /**
      * 以下是为了解决在火狐浏览器上推拽时弹出tab页到搜索问题
      * @param event
@@ -155,11 +192,21 @@ export default defineComponent({
       }
       return false;
     }
+    const handleOpen = (key, keyPath) => {
+      console.log(key, keyPath);
+    };
+    const handleClose = (key, keyPath) => {
+      console.log(key, keyPath);
+    };
     return {
+      addTabs,
       move,
       addNode,
       dataBase,
+      tabsList,
       getMenu,
+      handleOpen,
+      handleClose,
     };
   },
 });
@@ -188,6 +235,9 @@ export default defineComponent({
   line-height: 50px;
   padding: 0 45px;
   min-width: 180px !important;
+}
+.upmeun {
+  height: 500px;
 }
 li {
   width: 100%;

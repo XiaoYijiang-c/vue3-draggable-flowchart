@@ -5,6 +5,7 @@ import * as echarts from 'echarts';
 import 'element-plus/lib/theme-chalk/index.css';
 import Axios from './axios/index.js'
 import VueDragResize from 'vue-drag-resize'
+
 const app = createApp(App)
 app.use(ElementPlus)
 app.config.globalProperties.$axios = Axios

@@ -2,15 +2,15 @@
   <!-- 主组件 -->
   <div v-if="easyFlowVisible">
     <el-row>
-      <el-col :span="3" ref="flowTool">
-        <flowTool @addNode="addNode"></flowTool>
+      <el-col :span="3" >
+        <flowTool @addNode="addNode" ref="flowTool"></flowTool>
       </el-col>
       <el-col :span="21">
         <el-row :span="3">
           <el-col :span="24">
             <div style="margin-bottom: 5px; margin-left: 10px">
               <el-link type="primary">{{ list.name }}</el-link>
-              <el-button type="info" icon="el-icon-document" @click="uploadFiles"
+              <el-button type="info" icon="el-icon-document" @click="uploadFlow"
                 >上传流程</el-button
               >
               <el-button
@@ -28,11 +28,12 @@
               <el-button type="info" @click="openAddtab">
                 添加实验
               </el-button>
-              <el-button type="success" @click="save">
+              <el-button type="success" @click="save(editableTabsValue,list)">
                 保存当前实验
               </el-button>
             </div>
           </el-col>
+          
         </el-row>
         <el-row :span="21">
           <el-col :span="24">
@@ -43,8 +44,8 @@
               class="demo-tabs"
               closable
               @tab-remove="removeTab"
-              @tab-click="tested(editableTabsValue)"
-              :before-leave="tes"
+              :before-leave="switchTabs"
+              ref="Tabs"
             >
               <el-tab-pane
                 v-for="item in editableTabs"
@@ -66,7 +67,7 @@
                 </span>
               </template>
             </el-dialog>
-            <div id="flowContainer" class="container" ref="efContainer">
+            <div id="flowContainer" class="container" ref="efContainer" v-if="consoleVisiable">
                   <template v-for="node in list.nodeList" :key="node.id">
                     <flow-node
                       :ref="nodes"
@@ -289,7 +290,7 @@
                           />
                         </el-form-item>
                       </el-form>
-                      <div class="jzbutton"><el-button size="small" @click="uploadfiles2">检查模型</el-button></div>
+                      <div class="jzbutton"><el-button size="small" @click="checkModel">检查模型</el-button></div>
                       <template #footer>
                         <span class="dialog-footer">
                           <el-button @click="window.nodeFormVisible = false"
@@ -409,7 +410,7 @@
   </div>
 </template>
 <script>
-import { defineComponent, reactive, nextTick, ref } from "vue";
+import { defineComponent, reactive, nextTick, ref, watch } from "vue";
 import { jsPlumb } from "jsplumb";
 import { ElMessageBox } from "element-plus";
 import { ElMessage } from "element-plus";
@@ -434,14 +435,14 @@ export default defineComponent({
   setup() {
     //获取子组件
     // console.log(getDataA, getDataB);
-
+    let urls = "http://182.92.194.235:8000/users/register";
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
+    const Tabs = ref(null);
+
     // const efContainer = ref(null);
-    // onMounted(() => {
-    //   console.log("efContainer", efContainer.value);
-    // });
+
     const itemRefs = ref([]);
     const nodes = (el) => {
       if (el) {
@@ -465,47 +466,70 @@ export default defineComponent({
     let flowInfoVisible = ref(false);
     // 关于标签栏的设置
     // let tabIndex = 2;
-    const editableTabsValue = ref("1");
+    const editableTabsValue = ref("Tab 1");
     const newTabdialogVisible = ref(false);
     const newtabinput = ref(null);
     const editableTabs = ref([
-      reactive({
-        title: "Tab 1",
-        name: "1",
-        isSave: false,
-      }),
-      reactive({
-        title: "Tab 2",
-        name: "2",
-        isSave: false,
-      }),
+      // reactive({
+      //   title: "Tab 1",
+      //   name: "Tab 1",
+      //   isSave: false,
+      // }),
+      // reactive({
+      //   title: "Tab 2",
+      //   name: "Tab 2",
+      //   isSave: false,
+      // }),
     ]);
+    const consoleVisiable = ref(false);
+    watch(editableTabs.value, (newVal, oldVal) => {
+      if (newVal.length > 0) {
+        consoleVisiable.value = true;
+        console.log(newVal, oldVal);
+        allJsPlumb.jsPlumb = jsPlumb.getInstance();
+        changeTagReload(editableTabsValue.value);
+      }
+    });
+    function changeTabColor(name, color) {
+      let child = document.getElementsByClassName("el-tabs__item");
+      child.forEach((item) => {
+        if (item.outerText == name) {
+          item.style.color = color;
+        }
+      });
+    }
     function ChangeTag() {
       for (let v of editableTabs.value) {
         if (v.name == editableTabsValue.value) {
           v.isSave = false;
           console.log("changetag", v.isSave);
+          changeTabColor(v.name, "red");
           break;
         }
       }
     }
-    function save() {
+    function save(name, list) {
+      let list0 = list;
+      for (let window of list0.windowList) {
+        console.log("window", window);
+        if (uploadFilesType.includes(window.type))
+          delete window.FILE.fileContent;
+      }
       let data = {
-        type: save,
-        list: list,
+        operation: "savedata",
+        name: name,
+        list: list0,
       };
-      axios
-        .post("http://182.92.194.235:8000/users/register", data)
-        .then((res) => {
-          console.log("http://182.92.194.235:8000/users/register", res);
-          for (let v of editableTabs.value) {
-            if (v.name == editableTabsValue.value) {
-              v.isSave = true;
-              console.log("save", v.isSave);
-              break;
-            }
+      axios.post(urls, data).then((res) => {
+        console.log(urls, res);
+        for (let v of editableTabs.value) {
+          if (v.name == name) {
+            v.isSave = true;
+            changeTabColor(v.name, "pink");
+            break;
           }
-        });
+        }
+      });
     }
     function openAddtab() {
       newTabdialogVisible.value = true;
@@ -525,11 +549,15 @@ export default defineComponent({
       }
       const newTabName = newtabinput.value;
       newtabinput.value = null;
-      axios
-        .post("http://182.92.194.235:8000/users/register", newTabName)
-        .then((res) => {
-          console.log("newTabName", res);
-          if (flag) {
+      let data = {
+        name: newTabName,
+        operation: "newproject",
+      };
+      if (flag) {
+        axios
+          .post(urls, data)
+          .then((res) => {
+            console.log("newTabName", res.data);
             editableTabs.value.push(
               reactive({
                 title: newTabName,
@@ -537,11 +565,12 @@ export default defineComponent({
                 isSave: false,
               })
             );
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+            flowTool.value.addTabs(newTabName);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
 
       newTabdialogVisible.value = false;
       // editableTabsValue.value = newTabName;
@@ -549,33 +578,74 @@ export default defineComponent({
     const removeTab = (targetName) => {
       const tabs = editableTabs.value;
       let activeName = editableTabsValue.value;
-      if (activeName === targetName) {
-        tabs.forEach((tab, index) => {
-          if (tab.name === targetName) {
-            const nextTab = tabs[index + 1] || tabs[index - 1];
-            if (nextTab) {
-              activeName = nextTab.name;
-            }
-          }
+      ElMessageBox.confirm("是否删除" + activeName + "？")
+        .then(() => {
+          let data = {
+            name: activeName,
+            operation: "delproject",
+          };
+          axios.post(urls, data).then(() => {
+            // setEmptyFlow();
+            editableTabsValue.value = null;
+            editableTabs.value = tabs.filter((tab) => tab.name !== targetName);
+            console.log("flowTool.value", flowTool.value);
+          });
+        })
+        .catch(() => {
+          // catch
         });
-      }
-      editableTabsValue.value = activeName;
-      editableTabs.value = tabs.filter((tab) => tab.name !== targetName);
+      // if (activeName === targetName) {
+      //   tabs.forEach((tab, index) => {
+      //     if (tab.name === targetName) {
+      //       const nextTab = tabs[index + 1] || tabs[index - 1];
+      //       if (nextTab) {
+      //         activeName = nextTab.name;
+      //       }
+      //     }
+      //   });
+      // }
+      // editableTabsValue.value = activeName;
     };
-    function tested(item) {
-      console.log("tested", item);
+    // function setEmptyFlow() {
+    //   list.nodeList = [];
+    //   list.lineList = [];
+    //   list.windowList = [];
+    //   dataReload(list);
+    // }
+
+    function changeTagReload(item) {
+      let data = {
+        name: item,
+        operation: "openproject",
+      };
+      axios
+        .post(urls, data)
+        .then((res) => {
+          let data = JSON.parse(res.data);
+          console.log(typeof data);
+          dataReload(data);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+      // console.log("changeTagReload", item);
     }
-    function tes(activeName, oldActiveName) {
+    async function switchTabs(activeName, oldActiveName) {
       for (let v of editableTabs.value) {
-        if (v.name == oldActiveName && v.isSave == false) {
-          ElMessageBox.confirm("未保存流程，是否保存？")
-            .then(() => {
-              save();
-            })
-            .catch(() => {
-              // catch
+        try {
+          if (v.name == oldActiveName && v.isSave == false) {
+            await ElMessageBox.confirm("未保存流程，是否保存？", "错误", {
+              confirmButtonText: "保存",
+              cancelButtonText: "不保存",
+              type: "error",
             });
-          return false;
+            save(oldActiveName, list);
+            changeTagReload(activeName);
+            return true;
+          }
+        } catch (e) {
+          changeTagReload(activeName);
+          return true;
         }
       }
     }
@@ -645,8 +715,7 @@ export default defineComponent({
       loadEasyFlowFinish: false,
     });
     //挂载 jsplumb 初始化画布
-    allJsPlumb.jsPlumb = jsPlumb.getInstance();
-    dataReloadA();
+
     //绘制流程图
     function loadEasyFlow() {
       // 初始化各个节点的位置
@@ -662,8 +731,9 @@ export default defineComponent({
         }
       });
       //绘制节点
-      for (let i = 0; i < list.nodeList.length; i++) {
-        let node = list.nodeList[i];
+      // for (let i = 0; i < list.nodeList.length; i++)
+      for (let node of list.nodeList) {
+        // let node = list.nodeList[i];
         // let window = list.windowList[i];
         // window.nodeFormVisible = false;
         // 设置源点，可以拖出线连接其他节点
@@ -884,7 +954,69 @@ export default defineComponent({
       }
       return false;
     }
-
+    //构建window
+    function buildWindow(node, index) {
+      let txtwindow = {
+        dataEncodingType: ref(null),
+        dataType: ref(null),
+        input: ref(0),
+        size: ref(),
+        FILE: reactive({
+          file: {},
+          fileName: "",
+          fileContent: "",
+        }),
+      };
+      let zdywindow = {
+        fileType: ref("py"),
+        fileType2: ref("1"),
+      };
+      let matwindow = {
+        standardizing: ref("none"),
+        standardizion: ref("row"),
+        normalization: ref("col"),
+        posNormalizationNum: ref(0),
+        negNormalizationNum: ref(0),
+      };
+      let listwindow = {
+        showData: ref(null),
+      };
+      let basewindow = {
+        id: "node" + index,
+        wid: index,
+        type: node.type,
+        nodeFormVisible: false,
+        lineFrom: ref(null),
+      };
+      let wType = node.type;
+      if (wType == "txt" || wType == "csv") {
+        let window = {
+          ...basewindow,
+          ...txtwindow,
+        };
+        return window;
+      } else if (wType == "zdy") {
+        let window = {
+          ...zdywindow,
+          ...basewindow,
+        };
+        return window;
+      } else if (wType == "mat") {
+        let window = {
+          ...matwindow,
+          ...basewindow,
+        };
+        return window;
+      } else if (wType == "list") {
+        let window = {
+          ...listwindow,
+          ...basewindow,
+        };
+        return window;
+      } else {
+        return basewindow;
+      }
+    }
     //添加节点
     function addNode(evt, nodeMenu, mousePosition) {
       ChangeTag();
@@ -917,31 +1049,7 @@ export default defineComponent({
         ico: nodeMenu.ico,
         show: true,
       };
-      let window = {
-        id: "node" + index,
-        wid: index,
-        type: nodeMenu.type,
-        nodeFormVisible: false,
-        dataEncodingType: ref(null),
-        dataType: ref(null),
-        fileType: ref("py"),
-        fileType2: ref("1"),
-        standardizing: ref("none"),
-        standardizion: ref("row"),
-        normalization: ref("col"),
-        posNormalizationNum: ref(0),
-        negNormalizationNum: ref(0),
-        showData: ref(null),
-        lineFrom: ref(null),
-        FILE: reactive({
-          file: {},
-          fileName: "",
-          fileContent: "",
-        }),
-        input: ref(0),
-        size: ref(),
-      };
-      list.windowList.push(window);
+      list.windowList.push(buildWindow(node, index));
       // console.log(nodes.value);
       list.nodeList.push(node);
       INDEX.value++;
@@ -958,13 +1066,23 @@ export default defineComponent({
         });
 
         console.log(typeof node.top);
-        allJsPlumb.jsPlumb.makeSource(nodeId, allJsPlumb.jsplumbSourceOptions);
+        try {
+          allJsPlumb.jsPlumb.makeSource(
+            nodeId,
+            allJsPlumb.jsplumbSourceOptions
+          );
 
-        allJsPlumb.jsPlumb.makeTarget(nodeId, allJsPlumb.jsplumbTargetOptions);
+          allJsPlumb.jsPlumb.makeTarget(
+            nodeId,
+            allJsPlumb.jsplumbTargetOptions
+          );
 
-        allJsPlumb.jsPlumb.draggable(nodeId, {
-          containment: "parent",
-        });
+          allJsPlumb.jsPlumb.draggable(nodeId, {
+            containment: "parent",
+          });
+        } catch (e) {
+          console.log(e);
+        }
       });
     }
     //删除节点
@@ -1058,7 +1176,7 @@ export default defineComponent({
     //获取初始画布信息
     function dataReload(data) {
       easyFlowVisible.value = false;
-
+      itemRefs.value = [];
       list.nodeList = [];
       list.lineList = [];
       nextTick(() => {
@@ -1086,6 +1204,7 @@ export default defineComponent({
       });
     }
     function dataReloadA() {
+      console.log("getDataA()", getDataA());
       // 每次添加新的ref前都要置空
       itemRefs.value = [];
       dataReload(getDataA());
@@ -1113,26 +1232,42 @@ export default defineComponent({
       }
     }
     //上传文件
-    function uploadFiles() {
+    function uploadFlow() {
       let formdata = new FormData();
+      formdata.append("name", editableTabsValue.value);
+      formdata.append("operation", "execute");
+      formdata.append("order", "1");
+      console.log("?", list.windowList);
       for (let i = 0; i < $(".form").length; i++) {
         let formData = new FormData($(".form")[i]);
         // console.log("formData.get('file')", );
         formData.forEach((value, key) => {
-          formdata.append("node[" + i + "][" + key + "]", value);
-          console.log(i, key, ":", value);
+          if (key != "file") {
+            formdata.append("node[" + i + "][" + key + "]", value);
+            console.log(i, key, ":", value);
+          } else {
+            if (value) {
+              formdata.append("file[]", value);
+            } else {
+              formdata.append("file[]", "null");
+            }
+          }
+          if (value == "mat") {
+            formdata.append("file[]", "null");
+          }
         });
-
-        formdata.append("file[]", formData.get("file"));
       }
-      console.log("formdata", formdata.getAll("file[]"));
-      // console.log("formdata", formdata.getAll("node[]"));
-      console.log("Wid", $(".form"));
-
+      console.log("formData", formdata.getAll("file[]"));
+      let datas = {};
+      datas.lineList = list.lineList;
+      datas.nodeList = list.nodeList;
+      datas.name = editableTabsValue.value;
+      datas.operation = "execute";
+      datas.order = "2";
       $.ajax({
         type: "post",
-        // url: "http://182.92.194.235:8000/users/register",
-        url: "http://182.92.194.235:8000/users/register",
+        // url: urls,
+        url: urls,
         data: formdata,
         traditional: true,
         cache: false,
@@ -1140,46 +1275,22 @@ export default defineComponent({
         contentType: false,
         success: (res) => {
           console.log(res);
-        },
-      });
-      let datas = {};
-      datas.lineList = list.lineList;
-      datas.nodeList = list.nodeList;
-      axios
-        .post("http://182.92.194.235:8000/users/register", datas)
-        .then((res) => {
-          console.log(res);
-        });
-    }
-    function uploadFiles1(window) {
-      let formData = new FormData($("#form" + window.wid)[0]);
-      console.log("formData", window.wid);
-      $.ajax({
-        type: "post",
-        url: "http://182.92.194.235:8000/users/register",
-        // url: "http://182.92.194.235:8000/users/register",
-        data: formData,
-        cache: false,
-        processData: false,
-        contentType: false,
-        success: (res) => {
-          ElMessage({
-            message: res.respone,
-            type: "success",
+          axios.post(urls, datas).then((res) => {
+            console.log(res);
           });
         },
-        error: (err) => {
-          alert(err);
-        },
       });
     }
-    function uploadFiles2(window) {
+    function checkModel(window) {
       let formData = new FormData($("#form" + window.wid)[0]);
       console.log("formData", window.wid);
+      formData.append("name", editableTabsValue.value);
+      formData.append("operation", "trymodel");
+
       $.ajax({
         type: "post",
-        url: "http://182.92.194.235:8000/users/register",
-        // url: "http://182.92.194.235:8000/users/register",
+        url: urls,
+        // url: urls,
         data: formData,
         cache: false,
         processData: false,
@@ -1289,15 +1400,16 @@ export default defineComponent({
       dataReloadA,
       dataReloadB,
       dataEncodingType: ref(null),
-      uploadFiles,
-      uploadFiles1,
-      uploadFiles2,
+      uploadFlow,
+      checkModel,
       dataFromBack,
       addConsole,
       changeNodeName,
-      tested,
-      tes,
+      changeTagReload,
+      switchTabs,
       save,
+      Tabs,
+      consoleVisiable,
     };
   },
 });
@@ -1403,4 +1515,7 @@ p {
   align-items: center;
   justify-self: center;
 }
+/* .el-tabs__item.is-active {
+  color: grey !important;
+} */
 </style>

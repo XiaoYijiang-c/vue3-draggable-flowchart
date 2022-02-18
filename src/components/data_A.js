@@ -29,9 +29,9 @@ var data_A = {
             input: "100",
             size: "100* 4",
             FILE: {
-                file: {},
+                file: new File([123], "2.csv", { type: "application/vnd.ms-excel" }),
                 fileName: "",
-                fileContent: "",
+                fileContent: "2.csv",
             },
         },
         {
@@ -43,6 +43,10 @@ var data_A = {
         }
     ],
     index: 3,
+    // lineList: [],
+    // nodeList: [],
+    // windowList: [],
+    // index: 1
 }
 
 export function getDataA() {
