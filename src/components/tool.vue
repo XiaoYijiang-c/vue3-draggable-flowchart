@@ -46,6 +46,8 @@
             v-for="(item, index) in menu.children"
             :key="item.type + index"
             :index="item.type + index"
+            @click="click1(item.name)"
+            @contextmenu.prevent="deleteMeun(item.name)"
             >{{ item.name }}</el-menu-item
           >
         </el-submenu>
@@ -56,13 +58,15 @@
 <script>
 import { defineComponent, reactive } from "vue";
 import draggable from "vuedraggable";
-
+import { ElMessageBox } from "element-plus";
+import axios from "axios";
 export default defineComponent({
   name: "tool",
   components: {
     draggable,
   },
   setup(props, context) {
+    let urls = "http://182.92.194.235:8000/users/register";
     var mousePosition = reactive({
       left: -1,
       top: -1,
@@ -71,7 +75,7 @@ export default defineComponent({
       draggableOptions: {
         preventOnFilter: false,
       },
-      defaultOpeneds: ["group0", "group1"],
+      defaultOpeneds: ["group0"],
       menuList: [
         {
           type: "group",
@@ -136,7 +140,7 @@ export default defineComponent({
       draggableOptions: {
         preventOnFilter: false,
       },
-      defaultOpeneds: ["group0", "group1"],
+      defaultOpeneds: ["group0"],
       menuList: [
         {
           name: "tabList",
@@ -198,6 +202,36 @@ export default defineComponent({
     const handleClose = (key, keyPath) => {
       console.log(key, keyPath);
     };
+    function click1(name) {
+      console.log("111", name);
+      context.emit("fromCaddTab", name);
+    }
+    function deleteMeun(name) {
+      ElMessageBox.confirm("是否删除" + name + "？")
+        .then(() => {
+          let data = {
+            name: name,
+            operation: "delproject",
+          };
+          axios
+            .post(urls, data)
+            .then(() => {
+              console.log("axios");
+              let list = tabsList.menuList[0].children;
+              for (let i in tabsList.menuList[0].children) {
+                if (list[i].name == name) {
+                  list.splice(i, 1);
+                  console.log("list", list);
+                }
+              }
+              context.emit("removeTab", name);
+            })
+            .catch(() => {});
+        })
+        .catch(() => {
+          // catch
+        });
+    }
     return {
       addTabs,
       move,
@@ -207,6 +241,8 @@ export default defineComponent({
       getMenu,
       handleOpen,
       handleClose,
+      click1,
+      deleteMeun,
     };
   },
 });

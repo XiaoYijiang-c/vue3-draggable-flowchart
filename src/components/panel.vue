@@ -3,7 +3,7 @@
   <div v-if="easyFlowVisible">
     <el-row>
       <el-col :span="3" >
-        <flowTool @addNode="addNode" ref="flowTool"></flowTool>
+        <flowTool @addNode="addNode" ref="flowTool" @fromCaddTab="fromCaddTab" @removeTab="removeTab"></flowTool>
       </el-col>
       <el-col :span="21">
         <el-row :span="3">
@@ -435,7 +435,7 @@ export default defineComponent({
   setup() {
     //获取子组件
     // console.log(getDataA, getDataB);
-    let urls = "http://182.92.194.235:8000/users/register";
+    let urls = "http://127.0.0.1:5000";
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
@@ -483,12 +483,12 @@ export default defineComponent({
     ]);
     const consoleVisiable = ref(false);
     watch(editableTabs.value, (newVal, oldVal) => {
-      if (newVal.length > 0) {
-        consoleVisiable.value = true;
-        console.log(newVal, oldVal);
-        allJsPlumb.jsPlumb = jsPlumb.getInstance();
+      console.log("11111", newVal, oldVal);
+
+      if (consoleVisiable.value == false) {
         changeTagReload(editableTabsValue.value);
       }
+      consoleVisiable.value = true;
     });
     function changeTabColor(name, color) {
       let child = document.getElementsByClassName("el-tabs__item");
@@ -558,13 +558,7 @@ export default defineComponent({
           .post(urls, data)
           .then((res) => {
             console.log("newTabName", res.data);
-            editableTabs.value.push(
-              reactive({
-                title: newTabName,
-                name: newTabName,
-                isSave: false,
-              })
-            );
+
             flowTool.value.addTabs(newTabName);
           })
           .catch((e) => {
@@ -575,25 +569,41 @@ export default defineComponent({
       newTabdialogVisible.value = false;
       // editableTabsValue.value = newTabName;
     };
+    const fromCaddTab = (name) => {
+      console.log("fromCaddTab");
+      let flag = true;
+      for (let i of editableTabs.value) {
+        if (i.name == name) {
+          flag = false;
+          break;
+        }
+      }
+      if (flag) {
+        editableTabs.value.push(
+          reactive({
+            title: name,
+            name: name,
+            isSave: false,
+          })
+        );
+        if (editableTabs.value.length == 1) {
+          editableTabsValue.value = name;
+          consoleVisiable.value = true;
+          allJsPlumb.jsPlumb = jsPlumb.getInstance();
+          jsPlumbInit();
+        }
+      }
+    };
     const removeTab = (targetName) => {
       const tabs = editableTabs.value;
-      let activeName = editableTabsValue.value;
-      ElMessageBox.confirm("是否删除" + activeName + "？")
-        .then(() => {
-          let data = {
-            name: activeName,
-            operation: "delproject",
-          };
-          axios.post(urls, data).then(() => {
-            // setEmptyFlow();
-            editableTabsValue.value = null;
-            editableTabs.value = tabs.filter((tab) => tab.name !== targetName);
-            console.log("flowTool.value", flowTool.value);
-          });
-        })
-        .catch(() => {
-          // catch
-        });
+      // let activeName = editableTabsValue.value;
+
+      setEmptyFlow();
+      editableTabsValue.value = null;
+      consoleVisiable.value = false;
+      editableTabs.value = tabs.filter((tab) => tab.name !== targetName);
+      console.log("flowTool.value", flowTool.value);
+
       // if (activeName === targetName) {
       //   tabs.forEach((tab, index) => {
       //     if (tab.name === targetName) {
@@ -606,12 +616,13 @@ export default defineComponent({
       // }
       // editableTabsValue.value = activeName;
     };
-    // function setEmptyFlow() {
-    //   list.nodeList = [];
-    //   list.lineList = [];
-    //   list.windowList = [];
-    //   dataReload(list);
-    // }
+    function setEmptyFlow() {
+      list.nodeList = [];
+      list.lineList = [];
+      list.windowList = [];
+      list.index = 0;
+      dataReload(list);
+    }
 
     function changeTagReload(item) {
       let data = {
@@ -620,31 +631,30 @@ export default defineComponent({
       };
       axios
         .post(urls, data)
-        .then((res) => {
-          let data = JSON.parse(res.data);
-          console.log(typeof data);
-          dataReload(data);
+        .then(() => {
+          // let data = JSON.parse(res.data);
+          // dataReload(data);
+          // console.log(typeof data);
+          dataReloadA();
+          console.log("111");
         })
         .catch((e) => {
           console.log(e);
         });
       // console.log("changeTagReload", item);
     }
-    async function switchTabs(activeName, oldActiveName) {
+    function switchTabs(activeName, oldActiveName) {
       for (let v of editableTabs.value) {
-        try {
-          if (v.name == oldActiveName && v.isSave == false) {
-            await ElMessageBox.confirm("未保存流程，是否保存？", "错误", {
-              confirmButtonText: "保存",
-              cancelButtonText: "不保存",
-              type: "error",
+        if (v.name == oldActiveName && v.isSave == false) {
+          ElMessageBox.confirm("未保存流程，是否保存？")
+            .then(() => {
+              console.log("List", list);
+              save(oldActiveName, list);
+              changeTagReload(activeName);
+            })
+            .catch(() => {
+              changeTagReload(activeName);
             });
-            save(oldActiveName, list);
-            changeTagReload(activeName);
-            return true;
-          }
-        } catch (e) {
-          changeTagReload(activeName);
           return true;
         }
       }
@@ -1175,14 +1185,16 @@ export default defineComponent({
     }
     //获取初始画布信息
     function dataReload(data) {
-      easyFlowVisible.value = false;
+      // easyFlowVisible.value = false;
       itemRefs.value = [];
       list.nodeList = [];
       list.lineList = [];
+      list.windowList = [];
+      list.index = 1;
       nextTick(() => {
         // 这里模拟后台获取数据、然后加载
         data = lodash.cloneDeep(data);
-        easyFlowVisible.value = true;
+        // easyFlowVisible.value = true;
         console.log("data", data);
         console.log("list", list);
         // list = data;
@@ -1410,6 +1422,7 @@ export default defineComponent({
       save,
       Tabs,
       consoleVisiable,
+      fromCaddTab,
     };
   },
 });
