@@ -468,7 +468,7 @@ export default defineComponent({
     let flowInfoVisible = ref(false);
     // 关于标签栏的设置
     // let tabIndex = 2;
-    const editableTabsValue = ref("Tab 1");
+    const editableTabsValue = ref(null);
     const newTabdialogVisible = ref(false);
     const newtabinput = ref(null);
     const editableTabs = ref([
@@ -486,8 +486,6 @@ export default defineComponent({
     const consoleVisiable = ref(false);
     watch(editableTabs.value, (newVal, oldVal) => {
       console.log("11111", newVal, oldVal);
-
-      consoleVisiable.value = true;
     });
     function changeTabColor(name, color) {
       let child = document.getElementsByClassName("el-tabs__item");
@@ -579,6 +577,13 @@ export default defineComponent({
         }
       }
       if (flag) {
+        if (editableTabs.value.length == 0) {
+          // editableTabsValue.value = name;
+          // consoleVisiable.value = true;
+          // changeTagReload(editableTabsValue.value);
+          // editableTabsValue.value = null;
+          switchTabs(name, null);
+        }
         editableTabs.value.push(
           reactive({
             title: name,
@@ -586,11 +591,6 @@ export default defineComponent({
             isSave: false,
           })
         );
-        if (editableTabs.value.length == 1) {
-          editableTabsValue.value = name;
-          consoleVisiable.value = true;
-          changeTagReload(editableTabsValue.value);
-        }
       }
     };
     const removeTab = (targetName) => {
@@ -629,6 +629,7 @@ export default defineComponent({
     }
 
     function changeTagReload(item) {
+      consoleVisiable.value = true;
       let data = {
         name: item,
         operation: "openproject",
@@ -685,14 +686,16 @@ export default defineComponent({
         }
       }
       // setEmptyFlow();
-      if (
-        editableTabs.value.length != 1 &&
-        activeName &&
-        oldActiveName == null
-      ) {
+      if (activeName && oldActiveName == null) {
+        if (editableTabs.value.length != 1) {
+          editableTabsValue.value = activeName;
+          changeTagReload(activeName);
+        } else if (editableTabs.value.length == 1 && !consoleVisiable.value) {
+          editableTabsValue.value = activeName;
+          changeTagReload(activeName);
+        }
         consoleVisiable.value = true;
         console.log("editableTabs.value.length", editableTabs.value.length);
-        changeTagReload(activeName);
       }
 
       console.log("acti", activeName, oldActiveName);
