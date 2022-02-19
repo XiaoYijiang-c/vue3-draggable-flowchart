@@ -1,7 +1,7 @@
 <template>
   <div ref="tool" class="tool">
     <div>
-      <el-menu :default-openeds="dataBase.defaultOpeneds" unique-opened="true">
+      <el-menu :default-openeds="dataBase.defaultOpeneds">
         <el-submenu
           v-for="(menu, index) in dataBase.menuList"
           :index="menu.type + index"
@@ -67,6 +67,7 @@ export default defineComponent({
   },
   setup(props, context) {
     let urls = "http://182.92.194.235:8000/users/register";
+    // let urls = "http://127.0.0.1:5000";
     var mousePosition = reactive({
       left: -1,
       top: -1,
@@ -248,6 +249,12 @@ export default defineComponent({
 });
 </script>
 <style>
+.tool {
+  height: 700px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* position: relative; */
+}
 .flow-tool-menu {
   background-color: #eeeeee;
   cursor: pointer;

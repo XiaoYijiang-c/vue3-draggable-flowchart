@@ -43,6 +43,7 @@
               type="card"
               class="demo-tabs"
               closable
+              
               @tab-remove="removeTab"
               :before-leave="switchTabs"
               ref="Tabs"
@@ -67,7 +68,7 @@
                 </span>
               </template>
             </el-dialog>
-            <div id="flowContainer" class="container" ref="efContainer" v-if="consoleVisiable">
+            <div id="flowContainer" class="container" ref="efContainer" v-show="consoleVisiable">
                   <template v-for="node in list.nodeList" :key="node.id">
                     <flow-node
                       :ref="nodes"
@@ -435,7 +436,8 @@ export default defineComponent({
   setup() {
     //获取子组件
     // console.log(getDataA, getDataB);
-    let urls = "http://127.0.0.1:5000";
+    let urls = "http://182.92.194.235:8000/users/register";
+    // let urls = "http://127.0.0.1:5000";
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
@@ -485,9 +487,6 @@ export default defineComponent({
     watch(editableTabs.value, (newVal, oldVal) => {
       console.log("11111", newVal, oldVal);
 
-      if (consoleVisiable.value == false) {
-        changeTagReload(editableTabsValue.value);
-      }
       consoleVisiable.value = true;
     });
     function changeTabColor(name, color) {
@@ -558,8 +557,9 @@ export default defineComponent({
           .post(urls, data)
           .then((res) => {
             console.log("newTabName", res.data);
-
-            flowTool.value.addTabs(newTabName);
+            if (res.data.result != "项目已存在") {
+              flowTool.value.addTabs(newTabName);
+            }
           })
           .catch((e) => {
             console.log(e);
@@ -589,8 +589,7 @@ export default defineComponent({
         if (editableTabs.value.length == 1) {
           editableTabsValue.value = name;
           consoleVisiable.value = true;
-          allJsPlumb.jsPlumb = jsPlumb.getInstance();
-          jsPlumbInit();
+          changeTagReload(editableTabsValue.value);
         }
       }
     };
@@ -620,8 +619,13 @@ export default defineComponent({
       list.nodeList = [];
       list.lineList = [];
       list.windowList = [];
-      list.index = 0;
-      dataReload(list);
+      list.index = 1;
+      // dataReload(list);
+      allJsPlumb.jsPlumb.deleteEveryConnection();
+      // console.log(connections);
+      // for (var i in connections) {
+      //   console.log(connections[i].sourceId, connections[i].targetId);
+      // }
     }
 
     function changeTagReload(item) {
@@ -631,10 +635,13 @@ export default defineComponent({
       };
       axios
         .post(urls, data)
-        .then(() => {
+        .then((res) => {
+          console.log("res.data", res.data);
+
           // let data = JSON.parse(res.data);
-          // dataReload(data);
-          // console.log(typeof data);
+          // dataReload(res.data.list);
+          // console.log("data", data);
+          // setEmptyFlow();
           dataReloadA();
           console.log("111");
         })
@@ -643,9 +650,28 @@ export default defineComponent({
         });
       // console.log("changeTagReload", item);
     }
+    // function switchTabs(activeName, oldActiveName) {
+    //   for (let v of editableTabs.value) {
+    //     if (v.name == oldActiveName && v.isSave == false) {
+    //       changeTagReload(activeName);
+
+    //       ElMessageBox.confirm("未保存流程，是否保存？")
+    //         .then(() => {
+    //           console.log("List", list);
+    //           save(oldActiveName, list);
+    //         })
+    //         .catch(() => {
+    //           editableTabsValue.value = activeName;
+    //         });
+
+    //       return true;
+    //     }
+    //   }
+    // }
     function switchTabs(activeName, oldActiveName) {
       for (let v of editableTabs.value) {
         if (v.name == oldActiveName && v.isSave == false) {
+          allJsPlumb.jsPlumb.deleteEveryConnection();
           ElMessageBox.confirm("未保存流程，是否保存？")
             .then(() => {
               console.log("List", list);
@@ -653,11 +679,25 @@ export default defineComponent({
               changeTagReload(activeName);
             })
             .catch(() => {
+              editableTabsValue.value = activeName;
               changeTagReload(activeName);
             });
-          return true;
         }
       }
+      // setEmptyFlow();
+      if (
+        editableTabs.value.length != 1 &&
+        activeName &&
+        oldActiveName == null
+      ) {
+        consoleVisiable.value = true;
+        console.log("editableTabs.value.length", editableTabs.value.length);
+        changeTagReload(activeName);
+      }
+
+      console.log("acti", activeName, oldActiveName);
+      // //
+      // return true;
     }
     // 关于jsplumb的设置
     const allJsPlumb = reactive({
@@ -757,6 +797,7 @@ export default defineComponent({
       }
       // 绘制线
       for (let i = 0; i < list.lineList.length; i++) {
+        console.log("1");
         let line = list.lineList[i];
         let connParam = {
           source: line.from,
@@ -894,12 +935,11 @@ export default defineComponent({
         allJsPlumb.jsPlumb.bind("connection", function (evt) {
           let from = evt.source.id;
           let to = evt.target.id;
-          if (allJsPlumb.loadEasyFlowFinish) {
-            list.lineList.push({
-              from: from,
-              to: to,
-            });
-          }
+
+          list.lineList.push({
+            from: from,
+            to: to,
+          });
         });
 
         // 删除连线
@@ -1029,71 +1069,73 @@ export default defineComponent({
     }
     //添加节点
     function addNode(evt, nodeMenu, mousePosition) {
-      ChangeTag();
-      console.log("添加节点", evt, nodeMenu);
-      console.log("flowTool.value", flowTool.value);
-      // let width = flowTool.value.$el.clientWidth;
-      const index = list.index++;
-      let nodeId = "node" + index;
-      let left = evt.originalEvent.clientX;
-      let top = evt.originalEvent.clientY;
-      //居中
-      left -= 300;
-      top -= 120;
-      if (isFirefox()) {
-        console.log("INFIREFOX");
-        left = mousePosition.left;
-        top = mousePosition.top;
+      if (consoleVisiable.value) {
+        ChangeTag();
+        console.log("添加节点", evt, nodeMenu);
+        console.log("flowTool.value", flowTool.value);
+        // let width = flowTool.value.$el.clientWidth;
+        const index = list.index++;
+        let nodeId = "node" + index;
+        let left = evt.originalEvent.clientX;
+        let top = evt.originalEvent.clientY;
         //居中
-        left -= 100;
-        top -= 75;
-      }
+        left -= 300;
+        top -= 120;
+        if (isFirefox()) {
+          console.log("INFIREFOX");
+          left = mousePosition.left;
+          top = mousePosition.top;
+          //居中
+          left -= 100;
+          top -= 75;
+        }
 
-      let node = {
-        id: "node" + index,
-        wid: index,
-        name: nodeMenu.name,
-        type: nodeMenu.type,
-        left: left + "px",
-        top: top + "px",
-        ico: nodeMenu.ico,
-        show: true,
-      };
-      list.windowList.push(buildWindow(node, index));
-      // console.log(nodes.value);
-      list.nodeList.push(node);
-      INDEX.value++;
-      // list = { 1: "1", 2: "2" };
-      nextTick(() => {
-        // 绘制添加的新节点
-        itemRefs.value.forEach((item) => {
-          for (let node of list.nodeList) {
-            if (item.node.id == node.id) {
-              item.nodes.style.left = node.left;
-              item.nodes.style.top = node.top;
+        let node = {
+          id: "node" + index,
+          wid: index,
+          name: nodeMenu.name,
+          type: nodeMenu.type,
+          left: left + "px",
+          top: top + "px",
+          ico: nodeMenu.ico,
+          show: true,
+        };
+        list.windowList.push(buildWindow(node, index));
+        // console.log(nodes.value);
+        list.nodeList.push(node);
+        INDEX.value++;
+        // list = { 1: "1", 2: "2" };
+        nextTick(() => {
+          // 绘制添加的新节点
+          itemRefs.value.forEach((item) => {
+            for (let node of list.nodeList) {
+              if (item.node.id == node.id) {
+                item.nodes.style.left = node.left;
+                item.nodes.style.top = node.top;
+              }
             }
+          });
+
+          console.log(typeof node.top);
+          try {
+            allJsPlumb.jsPlumb.makeSource(
+              nodeId,
+              allJsPlumb.jsplumbSourceOptions
+            );
+
+            allJsPlumb.jsPlumb.makeTarget(
+              nodeId,
+              allJsPlumb.jsplumbTargetOptions
+            );
+
+            allJsPlumb.jsPlumb.draggable(nodeId, {
+              containment: "parent",
+            });
+          } catch (e) {
+            console.log(e);
           }
         });
-
-        console.log(typeof node.top);
-        try {
-          allJsPlumb.jsPlumb.makeSource(
-            nodeId,
-            allJsPlumb.jsplumbSourceOptions
-          );
-
-          allJsPlumb.jsPlumb.makeTarget(
-            nodeId,
-            allJsPlumb.jsplumbTargetOptions
-          );
-
-          allJsPlumb.jsPlumb.draggable(nodeId, {
-            containment: "parent",
-          });
-        } catch (e) {
-          console.log(e);
-        }
-      });
+      }
     }
     //删除节点
     function deleteNode(Node) {
@@ -1186,7 +1228,6 @@ export default defineComponent({
     //获取初始画布信息
     function dataReload(data) {
       // easyFlowVisible.value = false;
-      itemRefs.value = [];
       list.nodeList = [];
       list.lineList = [];
       list.windowList = [];
