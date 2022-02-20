@@ -411,7 +411,14 @@
   </div>
 </template>
 <script>
-import { defineComponent, reactive, nextTick, ref, watch } from "vue";
+import {
+  defineComponent,
+  reactive,
+  nextTick,
+  ref,
+  watch,
+  onMounted,
+} from "vue";
 import { jsPlumb } from "jsplumb";
 import { ElMessageBox } from "element-plus";
 import { ElMessage } from "element-plus";
@@ -442,9 +449,21 @@ export default defineComponent({
     const flowInfo = ref(null);
     const FlowConsoles = ref();
     const Tabs = ref(null);
-
+    onMounted(() => [IndexLoading()]);
     // const efContainer = ref(null);
-
+    function IndexLoading() {
+      axios
+        .post(urls, { operation: "openindex" })
+        .then((res) => {
+          console.log(res.data.projectlist);
+          for (let v of res.data.projectlist) {
+            flowTool.value.addTabs(v);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
     const itemRefs = ref([]);
     const nodes = (el) => {
       if (el) {
@@ -509,7 +528,7 @@ export default defineComponent({
       let list0 = list;
       for (let window of list0.windowList) {
         console.log("window", window);
-        if (uploadFilesType.includes(window.type))
+        if (window.type === "txt" || window.type == "csv")
           delete window.FILE.fileContent;
       }
       let data = {
@@ -638,12 +657,19 @@ export default defineComponent({
         .post(urls, data)
         .then((res) => {
           console.log("res.data", res.data);
-
+          let resData = res.data.list;
           // let data = JSON.parse(res.data);
+          let data = {
+            windowList: resData.windowList,
+            nodeList: resData.nodeList,
+            lineList: resData.lineList,
+            index: resData.index,
+          };
           // dataReload(res.data.list);
+          dataReload(data);
           // console.log("data", data);
           // setEmptyFlow();
-          dataReloadA();
+          // dataReloadA();
           console.log("111");
         })
         .catch((e) => {
@@ -669,7 +695,7 @@ export default defineComponent({
     //     }
     //   }
     // }
-    function switchTabs(activeName, oldActiveName) {
+    async function switchTabs(activeName, oldActiveName) {
       for (let v of editableTabs.value) {
         if (v.name == oldActiveName && v.isSave == false) {
           allJsPlumb.jsPlumb.deleteEveryConnection();
@@ -677,12 +703,19 @@ export default defineComponent({
             .then(() => {
               console.log("List", list);
               save(oldActiveName, list);
-              changeTagReload(activeName);
             })
             .catch(() => {
               editableTabsValue.value = activeName;
+            })
+            .finally(() => {
+              allJsPlumb.jsPlumb.deleteEveryConnection();
               changeTagReload(activeName);
             });
+
+          // changeTagReload(activeName);
+        } else if (v.name == oldActiveName && v.isSave) {
+          allJsPlumb.jsPlumb.deleteEveryConnection();
+          changeTagReload(activeName);
         }
       }
       // setEmptyFlow();
@@ -697,6 +730,9 @@ export default defineComponent({
         consoleVisiable.value = true;
         console.log("editableTabs.value.length", editableTabs.value.length);
       }
+      // if (activeName && oldActiveName != 0) {
+      //   changeTagReload(activeName);
+      // }
 
       console.log("acti", activeName, oldActiveName);
       // //
@@ -1231,6 +1267,7 @@ export default defineComponent({
     //获取初始画布信息
     function dataReload(data) {
       // easyFlowVisible.value = false;
+      itemRefs.value = [];
       list.nodeList = [];
       list.lineList = [];
       list.windowList = [];
