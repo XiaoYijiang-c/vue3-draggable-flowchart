@@ -38,6 +38,7 @@
           v-for="(menu, index) in tabsList.menuList"
           :index="menu.type + index + 3"
           :key="menu.type + index"
+          v-model="menu.name"
         >
           <template #title>
             <span>{{ menu.name }}</span>
@@ -56,10 +57,12 @@
   </div>
 </template>
 <script>
-import { defineComponent, reactive } from "vue";
+import { defineComponent, reactive, ref } from "vue";
 import draggable from "vuedraggable";
 import { ElMessageBox } from "element-plus";
 import axios from "axios";
+import { get_chinese } from "./js/Chinese";
+import { get_English } from "./js/English";
 export default defineComponent({
   name: "tool",
   components: {
@@ -68,75 +71,89 @@ export default defineComponent({
   setup(props, context) {
     let urls = "http://182.92.194.235:8000/users/register";
     // let urls = "http://127.0.0.1:5000";
+
+    let txt = ref({});
+    txt.value = get_chinese().tool;
     var mousePosition = reactive({
       left: -1,
       top: -1,
     });
-    const dataBase = reactive({
+    function switch_status(status) {
+      if (status) {
+        console.log("switch_lan", txt.value);
+        txt.value = get_English().tool;
+      } else {
+        console.log("switch_lan", txt.value);
+
+        txt.value = get_chinese().tool;
+      }
+    }
+
+    const dataBase = {
       draggableOptions: {
         preventOnFilter: false,
       },
       defaultOpeneds: ["group0"],
-      menuList: [
+      menuList: reactive([
         {
           type: "group",
-          name: "上传文件",
+          name: txt.value.f_name.upload_file,
           ico: "el-icon-video-play",
           children: [
             {
               type: "txt",
-              name: "上传纯序列文件",
+              name: txt.value.c_name.txt,
               ico: "el-icon-time",
             },
             {
               type: "csv",
-              name: "上传CSV文件",
+              name: txt.value.c_name.csv,
               ico: "el-icon-odometer",
             },
             {
               type: "zdy",
-              name: "上传自定义模型",
+              name: txt.value.c_name.zdy,
               ico: "el-icon-odometer",
             },
           ],
         },
         {
           type: "group",
-          name: "数据转换",
+          name: txt.value.f_name.data_change,
           ico: "el-icon-video-pause",
           children: [
             {
               type: "list",
-              name: "Data Table",
+              name: txt.value.c_name.data_table,
               ico: "el-icon-caret-right",
             },
             {
               type: "mat",
-              name: "矩阵",
+              name: txt.value.c_name.mat,
               ico: "el-icon-shopping-cart-full",
             },
           ],
         },
         {
           type: "group",
-          name: "矩阵拼接",
+          name: txt.value.f_name.mat_build,
           ico: "el-icon-video-play",
           children: [
             {
               type: "col",
-              name: "列拼接",
+              name: txt.value.c_name.col,
               ico: "el-icon-time",
             },
             {
               type: "row",
-              name: "行拼接",
+              name: txt.value.c_name.row,
               ico: "el-icon-odometer",
             },
           ],
         },
-      ],
+      ]),
       nodeMenu: {},
-    });
+    };
     const tabsList = reactive({
       draggableOptions: {
         preventOnFilter: false,
@@ -144,12 +161,14 @@ export default defineComponent({
       defaultOpeneds: ["group0"],
       menuList: [
         {
-          name: "tabList",
+          name: txt.value.f_name.tab_list,
           type: "group",
           children: [],
         },
       ],
     });
+
+    console.log(dataBase, tabsList);
     function addTabs(name) {
       let Tab = {
         type: "tab",
@@ -244,6 +263,7 @@ export default defineComponent({
       handleClose,
       click1,
       deleteMeun,
+      switch_status,
     };
   },
 });

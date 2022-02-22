@@ -9,28 +9,31 @@
         <el-row :span="3">
           <el-col :span="24">
             <div style="margin-bottom: 5px; margin-left: 10px">
-              <el-link type="primary">{{ list.name }}</el-link>
+              <div><el-link type="primary">{{ list.name }}</el-link>
               <el-button type="info" icon="el-icon-document" @click="uploadFlow"
-                >上传流程</el-button
+                >{{panel_txt.top_meun.upload}}</el-button
               >
               <el-button
                 type="primary"
                 @click="dataReloadB"
                 icon="el-icon-refresh"
-                >清空</el-button
+                >{{panel_txt.top_meun.clear}}</el-button
               >
               <el-button
                 type="success"
                 icon="el-icon-refresh"
                 @click="addConsole"
-                >添加控制台</el-button
+                >{{panel_txt.top_meun.add_console}}</el-button
               >
               <el-button type="info" @click="openAddtab">
-                添加实验
+                {{panel_txt.top_meun.add_tab}}
               </el-button>
               <el-button type="success" @click="save(editableTabsValue,list)">
-                保存当前实验
-              </el-button>
+                {{panel_txt.top_meun.save}}
+              </el-button></div>
+              <div style="float:right;"><el-button type="success" @click="switchLan">
+                {{panel_txt.top_meun.switch_lan}}
+              </el-button></div>
             </div>
           </el-col>
           
@@ -84,7 +87,7 @@
                   <template v-for="window in list.windowList" :key="window.wid">
                     <!-- v-if="window.type === 'txt'" -->                    
                     <el-dialog
-                      title="提示"
+                      :title="panel_txt.window.tc.title"
                       v-model="window.nodeFormVisible"
                       width="50%"
                       :before-close="handleClose"
@@ -101,7 +104,7 @@
                         :id="'form' + window.wid"
                         @change="computeSize(window)"
                       >
-                      <el-form-item label="数据类型">
+                      <el-form-item :label="panel_txt.window.tc.data_type">
                           <el-radio
                             v-model="window.dataType"
                             label="DNA"
@@ -116,7 +119,7 @@
                           >
                           <el-radio
                             v-model="window.dataType"
-                            label="protein"
+                            :label="panel_txt.window.tc.protein"
                             name="dataType"
                             >protein</el-radio
                           >
@@ -127,7 +130,7 @@
                             >other</el-radio
                           >
                         </el-form-item>
-                        <el-form-item label="编码类型" v-show="window.dataType !='other'">
+                        <el-form-item :label="panel_txt.window.tc.data_enc_type" v-show="window.dataType !='other'">
                           <el-radio
                             v-model="window.dataEncodingType"
                             label="dict"
@@ -145,7 +148,7 @@
                         <el-form-item label="Spclen" v-show="window.dataType !='other'">
                           <el-input
                             v-model="window.input"
-                            placeholder="请输入内容"
+                            :placeholder="panel_txt.window.tc.placeholder"
                             name="Spclen"
                             type="number"
                           ></el-input>
@@ -157,10 +160,10 @@
                           ></el-input>
                         </el-form-item>
 
-                        <el-form-item label="矩阵维度" v-show="window.dataType !='other'"
+                        <el-form-item :label="panel_txt.window.tc.mat_size" v-show="window.dataType !='other'"
                           >{{ window.size }}
                         </el-form-item>
-                        <el-form-item label="文件上传" >
+                        <el-form-item :label="panel_txt.window.tc.file_upload" >
                           <input
                             type="file"
                             name="file"
@@ -183,14 +186,14 @@
                       <template #footer>
                         <span class="dialog-footer">
                           <el-button @click="window.nodeFormVisible = false"
-                            >取 消</el-button
+                            >{{panel_txt.window.footer.cancel}}</el-button
                           >
                           <el-button
                             type="primary"
                             @click="
                               (window.nodeFormVisible = false), changeNodeName(window)
                             "
-                            >确 定</el-button
+                            >{{panel_txt.window.footer.confirm}}</el-button
                           >
                         </span>
                       </template>
@@ -217,7 +220,7 @@
                     </el-dialog>                    
                     <!-- v-if="window.type === 'zdy'" -->                    
                     <el-dialog
-                      title="上传自定义模型"
+                      :title="panel_txt.window.zdy.title"
                       class="zdy"
                       v-model="window.nodeFormVisible"
                       width="50%"
@@ -232,18 +235,18 @@
                         :id="'form' + window.wid"
                         class="form"
                       >
-                        <el-form-item label="文件类型">
+                        <el-form-item :label="panel_txt.window.zdy.file_type">
                           <el-radio-group v-model="window.fileType">
                             <el-radio-button label="py" name="modelfiletype"
-                              >选择.py模型文件</el-radio-button
+                              >{{panel_txt.window.zdy.file_type_value1}}</el-radio-button
                             >
                             <el-radio-button label="json" name="modelfiletype"
-                              >选择.json模型文件</el-radio-button
+                              >{{panel_txt.window.zdy.file_type_value2}}</el-radio-button
                             >
                           </el-radio-group>
                         </el-form-item>
                         <el-form-item
-                          label=".py模型文件上传"
+                          :label="panel_txt.window.zdy.file_type_value1"
                           v-show="window.fileType === 'py'"
                         >
                           <input
@@ -256,7 +259,7 @@
                           />
                         </el-form-item>
                         <el-form-item
-                          label=".json模型文件上传"
+                          :label="panel_txt.window.zdy.file_type_value2"
                           v-show="window.fileType === 'json'"
                         >
                           <input
@@ -268,18 +271,18 @@
                             @change="fileInfo(getFileContent, window)"
                           />
                         </el-form-item>
-                        <el-form-item label="文件类型">
+                        <el-form-item :label="panel_txt.window.zdy.file_type">
                           <el-radio-group v-model="window.fileType2">
                             <el-radio-button label="1" name="hasweight"
-                              >选择权重文件</el-radio-button
+                              >{{panel_txt.window.zdy.file_type_value3}}</el-radio-button
                             >
                             <el-radio-button label="0" name="hasweight"
-                              >不选择权重文件</el-radio-button
+                              >{{panel_txt.window.zdy.file_type_value4}}</el-radio-button
                             >
                           </el-radio-group>
                         </el-form-item>
                         <el-form-item
-                          label="权重文件上传"
+                          :label="panel_txt.window.zdy.file_upload_value"
                           v-show="window.fileType2 === '1'"
                         >
                           <input
@@ -291,25 +294,25 @@
                           />
                         </el-form-item>
                       </el-form>
-                      <div class="jzbutton"><el-button size="small" @click="checkModel">检查模型</el-button></div>
+                      <div class="jzbutton"><el-button size="small" @click="checkModel">{{panel_txt.window.zdy.check_model}}</el-button></div>
                       <template #footer>
                         <span class="dialog-footer">
                           <el-button @click="window.nodeFormVisible = false"
-                            >取 消</el-button
+                            >{{panel_txt.window.footer.cancel}}</el-button
                           >
                           <el-button
                             type="primary"
                             @click="
                               (window.nodeFormVisible = false)
                             "
-                            >确 定</el-button
+                            >{{panel_txt.window.footer.confirm}}</el-button
                           >
                         </span>
                       </template>
                     </el-dialog>                    
                     <!-- v-if="window.type === 'mat'" -->                    
                     <el-dialog
-                      title="矩 阵"
+                      :title="panel_txt.window.mat.title"
                       v-model="window.nodeFormVisible"
                       v-if="window.type === 'mat'"
                       center
@@ -321,18 +324,18 @@
                         label-position="left"
                         :id="'form' + window.wid"
                       >
-                        <el-form-item label="矩阵处理">
+                        <el-form-item :label="panel_txt.window.mat.mat_handle">
                           <el-radio-group v-model="window.standardizing">
                             <el-radio-button
                               label="standardization"
                               name="matHandle"
-                              >标准化</el-radio-button
+                              >{{panel_txt.window.mat.mat_handle_value1.value1}}</el-radio-button
                             >
                             <el-radio-button label="normalization" name="matHandle"
-                              >归一化</el-radio-button
+                              >{{panel_txt.window.mat.mat_handle_value2.value1}}</el-radio-button
                             >
                             <el-radio-button label="none" name="matHandle"
-                              >不进行处理</el-radio-button
+                              >{{panel_txt.window.mat.mat_handle_value3}}</el-radio-button
                             >
                           </el-radio-group>
                         </el-form-item>
@@ -351,31 +354,31 @@
                             v-model="window.id"
                             style="display:none"
                           ></el-input>
-                        <el-form-item label="归一化" v-show="window.standardizing == 'normalization'">
+                        <el-form-item :label="panel_txt.window.mat.mat_handle_value2.value1" v-show="window.standardizing == 'normalization'">
                           <el-radio-group v-model="window.normalization">
                             <el-radio-button
                               label="row"
                               name="matNormalization"
-                              >行归一化</el-radio-button
+                              >{{panel_txt.window.mat.mat_handle_value2.value2}}</el-radio-button
                             >
                             <el-radio-button label="col" name="matNormalization"
-                              >列归一化</el-radio-button
+                              >{{panel_txt.window.mat.mat_handle_value2.value3}}</el-radio-button
                             >
                           </el-radio-group>
                         </el-form-item>
-                        <el-form-item label="标准化" v-show="window.standardizing == 'standardization'">
+                        <el-form-item :label="panel_txt.window.mat.mat_handle_value1.value1" v-show="window.standardizing == 'standardization'">
                           <el-radio-group v-model="window.standardization">
                             <el-radio-button
                               label="row"
                               name="matstandardization"
-                              >行标准化</el-radio-button
+                              >{{panel_txt.window.mat.mat_handle_value1.value2}}</el-radio-button
                             >
                             <el-radio-button label="col" name="matstandardization"
-                              >列标准化</el-radio-button
+                              >{{panel_txt.window.mat.mat_handle_value1.value3}}</el-radio-button
                             >
                           </el-radio-group>
                         </el-form-item>
-                        <el-form-item label="归一区间" v-show="window.standardizing === 'normalization'">
+                        <el-form-item :label="panel_txt.window.mat.mat_handle_value4" v-show="window.standardizing === 'normalization'">
                             [<el-input-number v-model="window.negNormalizationNum" size="small" step=0.01 name="negNormalizationNum" :label="window.negNormalizationNum" :max="window.posNormalizationNum"/>
                             , <el-input-number v-model="window.posNormalizationNum" size="small" step="0.01" name="posNormalizationNum" :label="window.posNormalizationNum" :min="window.negNormalizationNum"/>]
                         </el-form-item>
@@ -383,14 +386,14 @@
                       <template #footer>
                         <span class="dialog-footer">
                           <el-button @click="window.nodeFormVisible = false"
-                            >取 消</el-button
+                            >{{panel_txt.window.footer.cancel}}</el-button
                           >
                           <el-button
                             type="primary"
                             @click="
                               (window.nodeFormVisible = false)
                             "
-                            >确 定</el-button
+                            >{{panel_txt.window.footer.confirm}}</el-button
                           >
                         </span>
                       </template>
@@ -403,11 +406,11 @@
       </el-col>
     </el-row>
 
-    <flow-info
+    <!-- <flow-info
       v-if="flowInfoVisible"
       ref="flowInfo"
       :data="list"
-    ></flow-info>
+    ></flow-info> -->
   </div>
 </template>
 <script>
@@ -424,12 +427,14 @@ import { ElMessageBox } from "element-plus";
 import { ElMessage } from "element-plus";
 import flowNode from "@/components/node";
 import flowTool from "@/components/tool";
-import FlowInfo from "@/components/info";
+// import FlowInfo from "@/components/info";
 import FlowConsoles from "@/components/consoles";
 import $ from "jquery";
 import lodash from "lodash";
-import { getDataA } from "./data_A";
-import { getDataB } from "./data_B";
+import { getDataA } from "./js/data_A";
+import { getDataB } from "./js/data_B";
+import { get_chinese } from "./js/Chinese";
+import { get_English } from "./js/English";
 import axios from "axios";
 
 export default defineComponent({
@@ -437,7 +442,6 @@ export default defineComponent({
   components: {
     flowNode,
     flowTool,
-    FlowInfo,
     FlowConsoles,
   },
   setup() {
@@ -448,8 +452,25 @@ export default defineComponent({
     const flowTool = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
+    const panel_txt = ref({});
     const Tabs = ref(null);
-    onMounted(() => [IndexLoading()]);
+    onMounted(() => {
+      IndexLoading();
+    });
+    panel_txt.value = get_chinese().panel;
+    console.log(panel_txt.value);
+    let switch_status = ref(true);
+    function switchLan() {
+      if (switch_status.value) {
+        panel_txt.value = get_English().panel;
+        flowTool.value.switch_status(true);
+        switch_status.value = get_English().status;
+      } else {
+        panel_txt.value = get_chinese().panel;
+        flowTool.value.switch_status(false);
+        switch_status.value = get_chinese().status;
+      }
+    }
     // const efContainer = ref(null);
     function IndexLoading() {
       axios
@@ -1249,21 +1270,21 @@ export default defineComponent({
       }
     }
 
-    function dataInfo() {
-      flowInfoVisible.value = true;
-      nextTick(() => {
-        flowInfo.value.init();
-        flowInfo.value.dataAll
-          .then((res) => {
-            // console.log("flowInfo.value.dataALL", res.data.rowjointdata);
-            console.log("flowInfo.value.dataALL", res.lineList);
-            dataFromBack.value = res.data.rowjointdata;
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      });
-    }
+    // function dataInfo() {
+    //   flowInfoVisible.value = true;
+    //   nextTick(() => {
+    //     flowInfo.value.init();
+    //     flowInfo.value.dataAll
+    //       .then((res) => {
+    //         // console.log("flowInfo.value.dataALL", res.data.rowjointdata);
+    //         console.log("flowInfo.value.dataALL", res.lineList);
+    //         dataFromBack.value = res.data.rowjointdata;
+    //       })
+    //       .catch((e) => {
+    //         console.log(e);
+    //       });
+    //   });
+    // }
     //获取初始画布信息
     function dataReload(data) {
       // easyFlowVisible.value = false;
@@ -1465,6 +1486,7 @@ export default defineComponent({
       FlowConsoles.value.addConsoleList();
     }
     return {
+      switchLan,
       editableTabs,
       editableTabsValue,
       addTab,
@@ -1489,7 +1511,6 @@ export default defineComponent({
       addNode,
       deleteNode,
       editNode,
-      dataInfo,
       dataReloadA,
       dataReloadB,
       dataEncodingType: ref(null),
@@ -1504,6 +1525,7 @@ export default defineComponent({
       Tabs,
       consoleVisiable,
       fromCaddTab,
+      panel_txt,
     };
   },
 });

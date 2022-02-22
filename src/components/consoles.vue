@@ -33,23 +33,21 @@
       v-for="cons in consoleSet.consoleList"
       :key="cons.id"
     >
-      <div v-show="cons.table">这是一个控制台{{ cons.id }}</div>
+      <div v-show="cons.table">{{ cons.id }}</div>
     </div>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent, reactive, ref } from "vue";
-import VueDragResize from "vue-drag-resize";
 import { CaretTop, CaretBottom, CloseBold } from "@element-plus/icons-vue";
 export default defineComponent({
   name: "App",
   components: {
-    VueDragResize,
     CaretTop,
     CaretBottom,
     CloseBold,
   },
-  setup(props, context) {
+  setup() {
     const table = ref(false);
     const mouseType = ref("default");
     let lastY = ref();
