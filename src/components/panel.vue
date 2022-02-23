@@ -9,7 +9,7 @@
         <el-row :span="3">
           <el-col :span="24">
             <div style="margin-bottom: 5px; margin-left: 10px">
-              <div><el-link type="primary">{{ list.name }}</el-link>
+              <span><el-link type="primary">{{ list.name }}</el-link>
               <el-button type="info" icon="el-icon-document" @click="uploadFlow"
                 >{{panel_txt.top_meun.upload}}</el-button
               >
@@ -30,10 +30,12 @@
               </el-button>
               <el-button type="success" @click="save(editableTabsValue,list)">
                 {{panel_txt.top_meun.save}}
-              </el-button></div>
-              <div style="float:right;"><el-button type="success" @click="switchLan">
+              </el-button></span>
+              <span style="float:right;"><el-button type="success" @click="switchLan">
                 {{panel_txt.top_meun.switch_lan}}
-              </el-button></div>
+              </el-button><el-button type="success" @click="deleteMeun(editableTabsValue)" :disabled="!editableTabsValue">
+                {{panel_txt.top_meun.delete_tab}}
+              </el-button></span>
             </div>
           </el-col>
           
@@ -524,6 +526,9 @@ export default defineComponent({
       // }),
     ]);
     const consoleVisiable = ref(false);
+    function deleteMeun(name) {
+      flowTool.value.deleteMeun(name);
+    }
     watch(editableTabs.value, (newVal, oldVal) => {
       console.log("11111", newVal, oldVal);
     });
@@ -661,7 +666,7 @@ export default defineComponent({
       list.windowList = [];
       list.index = 1;
       // dataReload(list);
-      allJsPlumb.jsPlumb.deleteEveryConnection();
+      // allJsPlumb.jsPlumb.deleteEveryConnection();
       // console.log(connections);
       // for (var i in connections) {
       //   console.log(connections[i].sourceId, connections[i].targetId);
@@ -1490,6 +1495,7 @@ export default defineComponent({
       editableTabs,
       editableTabsValue,
       addTab,
+      deleteMeun,
       newTabdialogVisible,
       newtabinput,
       openAddtab,

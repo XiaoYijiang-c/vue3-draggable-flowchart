@@ -11,7 +11,8 @@ var chinese = {
             add_console: "添加控制台",
             add_tab: "添加实验",
             save: "保存当前实验",
-            switch_lan: "switch"
+            switch_lan: "switch",
+            delete_tab: "删除当前实验"
         },
         window: {
             footer: {

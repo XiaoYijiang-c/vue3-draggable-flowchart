@@ -11,7 +11,8 @@ var English = {
             add_console: "tianjiakongzhitai",
             add_tab: "tianjiashiyan",
             save: "baocundangqianshiyan",
-            switch_lan: "切换"
+            switch_lan: "切换",
+            delete_tab: "delete"
         },
         window: {
             footer: {

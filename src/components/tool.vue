@@ -2,7 +2,7 @@
   <div ref="tool" class="tool">
     <div>
       <el-menu :default-openeds="dataBase.defaultOpeneds">
-        <el-submenu
+        <!-- <el-submenu
           v-for="(menu, index) in dataBase.menuList"
           :index="menu.type + index"
           :key="menu.type + index"
@@ -11,9 +11,7 @@
             <i :class="menu.ico"></i>
             <span>{{ menu.name }}</span>
           </template>
-          <!--一级菜单名称、不可拖拽 -->
-
-          <!--一级菜单子菜单、可拖拽菜单-->
+          
           <el-menu-item-group>
             <draggable
               @end="addNode"
@@ -33,6 +31,99 @@
               </template>
             </draggable>
           </el-menu-item-group>
+        </el-submenu> -->
+        <el-submenu :index="dataBase.menuList[0].type + 1">
+          <template #title>
+            <i :class="dataBase.menuList[0].ico"></i>
+            <span>{{ txt.f_name.upload_file }}</span>
+          </template>
+          <el-menu-item-group>
+            <draggable
+              @end="addNode"
+              @choose="move"
+              :list="dataBase.menuList[0].children"
+              item-key="name"
+              :options="dataBase.draggableOptions"
+            >
+              <template #item="{ element }">
+                <el-menu-item
+                  :index="element.type"
+                  :key="element.type"
+                  :type="element.type"
+                >
+                  <div v-show="element.type == 'txt'">
+                    <i :class="element.ico"></i>{{ txt.c_name.txt }}
+                  </div>
+                  <div v-show="element.type == 'csv'">
+                    <i :class="element.ico"></i>{{ txt.c_name.csv }}
+                  </div>
+                  <div v-show="element.type == 'zdy'">
+                    <i :class="element.ico"></i>{{ txt.c_name.zdy }}
+                  </div>
+                </el-menu-item>
+              </template>
+            </draggable>
+          </el-menu-item-group>
+        </el-submenu>
+        <el-submenu :index="dataBase.menuList[1].type + 2">
+          <template #title>
+            <i :class="dataBase.menuList[1].ico"></i>
+            <span>{{ txt.f_name.data_change }}</span>
+          </template>
+          <el-menu-item-group>
+            <draggable
+              @end="addNode"
+              @choose="move"
+              :list="dataBase.menuList[1].children"
+              item-key="name"
+              :options="dataBase.draggableOptions"
+            >
+              <template #item="{ element }">
+                <el-menu-item
+                  :index="element.type"
+                  :key="element.type"
+                  :type="element.type"
+                >
+                  <div v-show="element.type == 'list'">
+                    <i :class="element.ico"></i>{{ txt.c_name.data_table }}
+                  </div>
+                  <div v-show="element.type == 'mat'">
+                    <i :class="element.ico"></i>{{ txt.c_name.mat }}
+                  </div>
+                </el-menu-item>
+              </template>
+            </draggable>
+          </el-menu-item-group>
+        </el-submenu>
+        <el-submenu :index="dataBase.menuList[2].type + 3">
+          <template #title>
+            <i :class="dataBase.menuList[2].ico"></i>
+            <span>{{ txt.f_name.mat_build }}</span>
+          </template>
+          <el-menu-item-group>
+            <draggable
+              @end="addNode"
+              @choose="move"
+              :list="dataBase.menuList[2].children"
+              item-key="name"
+              :options="dataBase.draggableOptions"
+            >
+              <template #item="{ element }">
+                <el-menu-item
+                  :index="element.type"
+                  :key="element.type"
+                  :type="element.type"
+                >
+                  <div v-show="element.type == 'col'">
+                    <i :class="element.ico"></i>{{ txt.c_name.col }}
+                  </div>
+                  <div v-show="element.type == 'row'">
+                    <i :class="element.ico"></i>{{ txt.c_name.row }}
+                  </div>
+                </el-menu-item>
+              </template>
+            </draggable>
+          </el-menu-item-group>
         </el-submenu>
         <el-submenu
           v-for="(menu, index) in tabsList.menuList"
@@ -41,7 +132,7 @@
           v-model="menu.name"
         >
           <template #title>
-            <span>{{ menu.name }}</span>
+            <span>{{ txt.f_name.tab_list }}</span>
           </template>
           <el-menu-item
             v-for="(item, index) in menu.children"
@@ -82,6 +173,11 @@ export default defineComponent({
       if (status) {
         console.log("switch_lan", txt.value);
         txt.value = get_English().tool;
+        for (let v of dataBase.menuList) {
+          if (v.name == "上传文件") {
+            v.name = txt.value.f_name.upload_file;
+          }
+        }
       } else {
         console.log("switch_lan", txt.value);
 
@@ -89,17 +185,17 @@ export default defineComponent({
       }
     }
 
-    const dataBase = {
+    const dataBase = reactive({
       draggableOptions: {
         preventOnFilter: false,
       },
       defaultOpeneds: ["group0"],
-      menuList: reactive([
+      menuList: [
         {
           type: "group",
           name: txt.value.f_name.upload_file,
           ico: "el-icon-video-play",
-          children: [
+          children: reactive([
             {
               type: "txt",
               name: txt.value.c_name.txt,
@@ -115,7 +211,7 @@ export default defineComponent({
               name: txt.value.c_name.zdy,
               ico: "el-icon-odometer",
             },
-          ],
+          ]),
         },
         {
           type: "group",
@@ -151,9 +247,16 @@ export default defineComponent({
             },
           ],
         },
-      ]),
+      ],
       nodeMenu: {},
-    };
+    });
+    const child = reactive([
+      {
+        type: "txt",
+        name: txt.value.c_name.txt,
+        ico: "el-icon-time",
+      },
+    ]);
     const tabsList = reactive({
       draggableOptions: {
         preventOnFilter: false,
@@ -253,6 +356,8 @@ export default defineComponent({
         });
     }
     return {
+      txt,
+      child,
       addTabs,
       move,
       addNode,
