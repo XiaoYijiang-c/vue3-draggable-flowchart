@@ -70,7 +70,7 @@ var English = {
             txt: "shagnchuanchunxuliewenjian",
             csv: "shangchuan csv wenjian",
             zdy: "shagnchuanzidingyimoxing",
-            data_table: "Data Table",
+            list: "Data Table",
             mat: "juzhen",
             col: "liepingjie",
             row: "hangpingjie"

@@ -70,7 +70,7 @@ var chinese = {
             txt: "上传纯序列文件",
             csv: "上传csv文件",
             zdy: "上传自定义模型",
-            data_table: "Data Table",
+            list: "Data Table",
             mat: "矩阵",
             col: "列拼接",
             row: "行拼接"

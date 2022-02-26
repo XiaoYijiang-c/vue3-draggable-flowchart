@@ -1133,7 +1133,7 @@ export default defineComponent({
       }
     }
     //添加节点
-    function addNode(evt, nodeMenu, mousePosition) {
+    function addNode(evt, nodeMenu, mousePosition, name) {
       if (consoleVisiable.value) {
         ChangeTag();
         console.log("添加节点", evt, nodeMenu);
@@ -1158,7 +1158,7 @@ export default defineComponent({
         let node = {
           id: "node" + index,
           wid: index,
-          name: nodeMenu.name,
+          name: name,
           type: nodeMenu.type,
           left: left + "px",
           top: top + "px",

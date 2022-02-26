@@ -85,7 +85,7 @@
                   :type="element.type"
                 >
                   <div v-show="element.type == 'list'">
-                    <i :class="element.ico"></i>{{ txt.c_name.data_table }}
+                    <i :class="element.ico"></i>{{ txt.c_name.list }}
                   </div>
                   <div v-show="element.type == 'mat'">
                     <i :class="element.ico"></i>{{ txt.c_name.mat }}
@@ -220,7 +220,7 @@ export default defineComponent({
           children: [
             {
               type: "list",
-              name: txt.value.c_name.data_table,
+              name: txt.value.c_name.list,
               ico: "el-icon-caret-right",
             },
             {
@@ -310,7 +310,14 @@ export default defineComponent({
     }
     function addNode(evt) {
       console.log("InFirefox", mousePosition);
-      context.emit("addNode", evt, dataBase.nodeMenu, mousePosition);
+      let name = ref(null);
+      for (let key of Object.keys(txt.value.c_name)) {
+        if (key == dataBase.nodeMenu.type) {
+          name.value = txt.value.c_name[key];
+          break;
+        }
+      }
+      context.emit("addNode", evt, dataBase.nodeMenu, mousePosition, name);
     }
     function isFirefox() {
       var userAgent = navigator.userAgent;
