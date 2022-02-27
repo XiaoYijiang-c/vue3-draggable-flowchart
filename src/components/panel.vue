@@ -121,7 +121,7 @@
                           >
                           <el-radio
                             v-model="window.dataType"
-                            :label="panel_txt.window.tc.protein"
+                            label="protein"
                             name="dataType"
                             >protein</el-radio
                           >
@@ -253,7 +253,7 @@
                         >
                           <input
                             type="file"
-                            name="model"
+                            name="model_py"
                             :id="window.wid"
                             class="file"
                             accept=".py"
@@ -266,7 +266,7 @@
                         >
                           <input
                             type="file"
-                            name="model"
+                            name="model_json"
                             :id="window.wid"
                             class="file"
                             accept=".json"
@@ -301,6 +301,11 @@
                         <el-form-item label="epochs">
                           <el-input v-model="window.epochs" name="epochs"/>
                         </el-form-item>
+                        <el-input
+                            name="dataType"
+                            value="model"
+                            style="display:none"
+                          ></el-input>
                       </el-form>
                       <div class="jzbutton"><el-button size="small" @click="checkModel(window)">{{panel_txt.window.zdy.check_model}}</el-button></div>
                       <template #footer>
@@ -424,11 +429,12 @@
                       <el-form-item :label="panel_txt.window.tag.name" >
                           <el-input 
                             v-model="window.inputValue"
+                            name="labelnum"
                             class="w-50 m-2"
                             placeholder="Pick a date"
                             autofocus="autofocus"/>
                         </el-form-item>
-                        <el-form-item :label="panel_txt.window.tag.tip"><span>{{window.tip}}</span></el-form-item>
+                        <el-form-item :label="panel_txt.window.tag.tip"><span>{{window.tip}}</span><input type="text" name="connect" style="display:none;" v-model="window.tip"></el-form-item>
                       </el-form>
                       <template #footer>
                         <span class="dialog-footer">
@@ -952,28 +958,28 @@ export default defineComponent({
             let node2 = list.nodeList[cnt];
             let nType1 = node1.type;
             let nType2 = node2.type;
-            console.log(splice, nType1, transfrom);
+            console.log(splice, nType1, transfrom, nType2);
             if (node2.id === to) {
-              if (uploadFilesType.includes(nType2)) {
-                // 上传节点不可互连 且不可被连接
-                return true;
-              } else if (nType1 === "list") {
-                // list只能被连接
-                console.log(splice);
-                return true;
-              } else if (
-                splice.includes(nType2) &&
-                !transfrom.includes(nType1)
-              ) {
-                // 只能拼接矩阵
-                return true;
-              } else if (
-                transfrom.includes(nType2) &&
-                transfrom.includes(nType1)
-              ) {
-                // 矩阵只能转换文件节点
-                return true;
-              }
+              // if (uploadFilesType.includes(nType2)) {
+              //   // 上传节点不可互连 且不可被连接
+              //   return true;
+              // } else if (nType1 === "list") {
+              //   // list只能被连接
+              //   console.log(splice);
+              //   return true;
+              // } else if (
+              //   splice.includes(nType2) &&
+              //   !transfrom.includes(nType1)
+              // ) {
+              //   // 只能拼接矩阵
+              //   return true;
+              // } else if (
+              //   transfrom.includes(nType2) &&
+              //   transfrom.includes(nType1)
+              // ) {
+              //   // 矩阵只能转换文件节点
+              //   return true;
+              // }
             }
           }
         }
@@ -1417,7 +1423,7 @@ export default defineComponent({
         }
       }
     }
-    //上传文件
+    //上传流程
     function uploadFlow() {
       let formdata = new FormData();
       formdata.append("name", editableTabsValue.value);
@@ -1438,7 +1444,7 @@ export default defineComponent({
               formdata.append("file[]", "null");
             }
           }
-          if (value == "mat") {
+          if (value == "mat" || value == "modelfiletype") {
             formdata.append("file[]", "null");
           }
         });

@@ -6,7 +6,7 @@
     ref="conspage"
   >
     <div class="line" @mousedown="mouseDown" @mouseup="mouseUp"></div>
-    <div class="tool">
+    <div class="tool_console">
       <span
         class="consoleList"
         v-for="cons in consoleSet.consoleList"
@@ -33,12 +33,12 @@
       v-for="cons in consoleSet.consoleList"
       :key="cons.id"
     >
-      <div v-show="cons.table">{{ cons.id }}</div>
+      <div v-show="cons.table">这是一个控制台{{ cons.id }}</div>
     </div>
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, reactive, ref } from "vue";
+import { defineComponent, reactive, ref, watch } from "vue";
 import { CaretTop, CaretBottom, CloseBold } from "@element-plus/icons-vue";
 export default defineComponent({
   name: "App",
@@ -59,6 +59,22 @@ export default defineComponent({
           table: false,
         },
       ],
+    });
+    let console_update = null;
+    watch(table, (newVal, oldVal) => {
+      console.log("11111", newVal, oldVal);
+
+      if (newVal) {
+        console.log("connect");
+
+        console_update = setInterval(() => {
+          console.log("axios");
+        }, 5000);
+      } else {
+        console.log("clear");
+
+        clearInterval(console_update);
+      }
     });
     function getID() {
       for (let Console of consoleSet.consoleList) {
@@ -117,9 +133,11 @@ export default defineComponent({
       list.push(cons);
     }
     function unfoldConsole() {
+      table.value = true;
       lastH.value = 150;
     }
     function foldConsole() {
+      table.value = false;
       lastH.value = 40;
     }
     function deleteConsoleList(cons) {
@@ -182,7 +200,8 @@ li {
 .consolePanel {
   padding-left: 30px;
 }
-.tool {
+.tool_console {
+  height: 40px;
   width: 100%;
 }
 .leftTool {
