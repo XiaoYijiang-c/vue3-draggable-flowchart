@@ -56,6 +56,11 @@ var chinese = {
                 mat_handle_value3: "不进行处理",
                 mat_handle_value4: "归一区间",
 
+            },
+            tag: {
+                title: "标签",
+                tip: "连接矩阵:",
+                name: "标签名"
             }
         }
     },
@@ -64,7 +69,8 @@ var chinese = {
             upload_file: "上传文件",
             data_change: "数据转换",
             mat_build: "矩阵拼接",
-            tab_list: " 实验列表"
+            tab_list: " 实验列表",
+
         },
         c_name: {
             txt: "上传纯序列文件",
@@ -72,6 +78,9 @@ var chinese = {
             zdy: "上传自定义模型",
             list: "Data Table",
             mat: "矩阵",
+            tag: "标签",
+            train: "训练",
+            test: "测试",
             col: "列拼接",
             row: "行拼接"
         }

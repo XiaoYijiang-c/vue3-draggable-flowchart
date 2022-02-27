@@ -56,6 +56,11 @@ var English = {
                 mat_handle_value3: "bujinxinchuli",
                 mat_handle_value4: "guiyiqujian",
 
+            },
+            tag: {
+                title: "tag",
+                tip: "connect with",
+                name: "tag name"
             }
         }
     },
@@ -71,6 +76,9 @@ var English = {
             csv: "shangchuan csv wenjian",
             zdy: "shagnchuanzidingyimoxing",
             list: "Data Table",
+            tag: "tag",
+            train: "train",
+            test: "test",
             mat: "juzhen",
             col: "liepingjie",
             row: "hangpingjie"

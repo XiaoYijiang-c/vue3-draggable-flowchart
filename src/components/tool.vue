@@ -90,6 +90,15 @@
                   <div v-show="element.type == 'mat'">
                     <i :class="element.ico"></i>{{ txt.c_name.mat }}
                   </div>
+                  <div v-show="element.type == 'tag'">
+                    <i :class="element.ico"></i>{{ txt.c_name.tag }}
+                  </div>
+                  <div v-show="element.type == 'train'">
+                    <i :class="element.ico"></i>{{ txt.c_name.train }}
+                  </div>
+                  <div v-show="element.type == 'test'">
+                    <i :class="element.ico"></i>{{ txt.c_name.test }}
+                  </div>
                 </el-menu-item>
               </template>
             </draggable>
@@ -227,6 +236,21 @@ export default defineComponent({
               type: "mat",
               name: txt.value.c_name.mat,
               ico: "el-icon-shopping-cart-full",
+            },
+            {
+              type: "tag",
+              name: txt.value.c_name.tag,
+              ico: "el-icon-odometer",
+            },
+            {
+              type: "train",
+              name: txt.value.c_name.train,
+              ico: "el-icon-shopping-cart-full",
+            },
+            {
+              type: "test",
+              name: txt.value.c_name.test,
+              ico: "el-icon-caret-right",
             },
           ],
         },

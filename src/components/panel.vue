@@ -295,8 +295,14 @@
                             @change="fileInfo(getFileContent, window)"
                           />
                         </el-form-item>
+                        <el-form-item label="batch_size">
+                          <el-input v-model="window.batch_size" name="batch_size"/>
+                        </el-form-item>
+                        <el-form-item label="epochs">
+                          <el-input v-model="window.epochs" name="epochs"/>
+                        </el-form-item>
                       </el-form>
-                      <div class="jzbutton"><el-button size="small" @click="checkModel">{{panel_txt.window.zdy.check_model}}</el-button></div>
+                      <div class="jzbutton"><el-button size="small" @click="checkModel(window)">{{panel_txt.window.zdy.check_model}}</el-button></div>
                       <template #footer>
                         <span class="dialog-footer">
                           <el-button @click="window.nodeFormVisible = false"
@@ -352,7 +358,7 @@
                             style="display:none"
                           ></el-input>
                           <el-input
-                            name="nodeid"
+                            name="node-id"
                             v-model="window.id"
                             style="display:none"
                           ></el-input>
@@ -399,7 +405,46 @@
                           >
                         </span>
                       </template>
-                    </el-dialog>                   
+                    </el-dialog>
+                    <!-- v-if="window.type === 'tag'" -->                    
+                    <el-dialog
+                      :title="panel_txt.window.tag.title"
+                      v-model="window.nodeFormVisible"
+                      v-if="window.type === 'tag'"
+                      center
+                    >
+                    
+                    <el-form
+                        class="form"
+                        ref="dataForm"
+                        label-width="140px"
+                        label-position="left"
+                        :id="'form' + window.wid"
+                      >
+                      <el-form-item :label="panel_txt.window.tag.name" >
+                          <el-input 
+                            v-model="window.inputValue"
+                            class="w-50 m-2"
+                            placeholder="Pick a date"
+                            autofocus="autofocus"/>
+                        </el-form-item>
+                        <el-form-item :label="panel_txt.window.tag.tip"><span>{{window.tip}}</span></el-form-item>
+                      </el-form>
+                      <template #footer>
+                        <span class="dialog-footer">
+                          <el-button @click="(window.nodeFormVisible = false),(window.inputValue = null)"
+                            >{{panel_txt.window.footer.cancel}}</el-button
+                          >
+                          <el-button
+                            type="primary"
+                            @click="
+                              (window.nodeFormVisible = false)
+                            "
+                            >{{panel_txt.window.footer.confirm}}</el-button
+                          >
+                        </span>
+                      </template>
+                    </el-dialog>              
                   </template>
             </div>
           </el-col>
@@ -437,6 +482,7 @@ import { getDataA } from "./js/data_A";
 import { getDataB } from "./js/data_B";
 import { get_chinese } from "./js/Chinese";
 import { get_English } from "./js/English";
+import { Calendar } from "@element-plus/icons-vue";
 import axios from "axios";
 
 export default defineComponent({
@@ -497,7 +543,7 @@ export default defineComponent({
     const INDEX = ref(0);
     // nodeType
     let uploadFilesType = ["txt", "csv", "zdy"];
-    let transfrom = ["list", "mat"];
+    let transfrom = ["list", "mat", "tag", "train", "test"];
     let splice = ["col", "row"];
     //关于节点的属性设置
     let list = reactive({
@@ -1085,6 +1131,8 @@ export default defineComponent({
       let zdywindow = {
         fileType: ref("py"),
         fileType2: ref("1"),
+        batch_size: ref(0),
+        epochs: ref(0),
       };
       let matwindow = {
         standardizing: ref("none"),
@@ -1095,6 +1143,11 @@ export default defineComponent({
       };
       let listwindow = {
         showData: ref(null),
+      };
+      let tagwindow = {
+        tip: ref(null),
+        tagName: ref(null),
+        inputValue: ref(null),
       };
       let basewindow = {
         id: "node" + index,
@@ -1125,6 +1178,12 @@ export default defineComponent({
       } else if (wType == "list") {
         let window = {
           ...listwindow,
+          ...basewindow,
+        };
+        return window;
+      } else if (wType == "tag") {
+        let window = {
+          ...tagwindow,
           ...basewindow,
         };
         return window;
@@ -1257,6 +1316,14 @@ export default defineComponent({
           } else if (node.type === "mat") {
             window.lineFrom = findLinefrom(window);
             console.log("window.lineFrom", window.lineFrom);
+          } else if (node.type === "tag") {
+            if (findLinefrom(window)) {
+              window.tip =
+                panel_txt.value.window.tag.tip + findLinefrom(window);
+            } else {
+              window.tip = "no connect";
+            }
+            console.log(window.tip);
           }
           break;
         }
@@ -1532,6 +1599,7 @@ export default defineComponent({
       consoleVisiable,
       fromCaddTab,
       panel_txt,
+      Calendar,
     };
   },
 });
