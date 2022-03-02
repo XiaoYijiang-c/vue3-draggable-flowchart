@@ -33,13 +33,23 @@
       v-for="cons in consoleSet.consoleList"
       :key="cons.id"
     >
-      <div v-show="cons.table">这是一个控制台{{ cons.id }}</div>
+      <div
+        v-show="cons.table"
+        class="consolePanelData"
+        :style="'height:' + (lastH - 40) + 'px;'"
+      >
+        <div v-for="sp in consoleData" :key="sp">
+          {{ sp }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent, reactive, ref, watch } from "vue";
 import { CaretTop, CaretBottom, CloseBold } from "@element-plus/icons-vue";
+import axios from "axios";
+import $ from "jquery";
 export default defineComponent({
   name: "App",
   components: {
@@ -47,11 +57,15 @@ export default defineComponent({
     CaretBottom,
     CloseBold,
   },
-  setup() {
+  props: { editableTabsValue: String },
+  setup(props) {
+    // showContent[0].scrollTop = showContent[0].scrollHeight;
+
     const table = ref(false);
     const mouseType = ref("default");
     let lastY = ref();
     let lastH = ref(40);
+    let consoleData = ref([]);
     let consoleSet = reactive({
       consoleList: [
         {
@@ -65,10 +79,26 @@ export default defineComponent({
       console.log("11111", newVal, oldVal);
 
       if (newVal) {
-        console.log("connect");
+        console.log(props);
 
         console_update = setInterval(() => {
-          console.log("axios");
+          let data = {
+            name: props.editableTabsValue,
+            consoleID: null,
+          };
+          for (let sp of consoleSet.consoleList) {
+            if (sp.table) {
+              data.consoleID = sp.id;
+              break;
+            }
+          }
+          axios.post("http://127.0.0.1:5001", data).then((res) => {
+            // item.consoleData = res.data.result;
+            consoleData.value = res.data.result;
+            let showContent = $(".consolePanelData");
+            showContent[0].scrollTop = showContent[0].scrollHeight;
+            console.log("consoleData.value", consoleData.value, res);
+          });
         }, 5000);
       } else {
         console.log("clear");
@@ -156,6 +186,7 @@ export default defineComponent({
       lastH,
       consoleSet,
       mouseType,
+      consoleData,
       tinySize: 10,
       bigSize: 20,
       mouseDown,
@@ -174,6 +205,10 @@ export default defineComponent({
 .page {
   width: 100%;
   background-color: #fff;
+}
+.consolePanelData {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 li {
   margin: 0;

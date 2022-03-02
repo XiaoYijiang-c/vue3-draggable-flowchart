@@ -294,6 +294,12 @@
                             class="file"
                             @change="fileInfo(getFileContent, window)"
                           />
+                          <el-input
+                            name="node-id"
+                            v-model="window.id"
+                            id="hiddenInput"
+                            style="display:none"
+                          ></el-input>
                         </el-form-item>
                         <el-form-item label="batch_size">
                           <el-input v-model="window.batch_size" name="batch_size"/>
@@ -433,8 +439,14 @@
                             class="w-50 m-2"
                             placeholder="Pick a date"
                             autofocus="autofocus"/>
+                            <el-input
+                            name="node-id"
+                            v-model="window.id"
+                            id="hiddenInput"
+                            style="display:none"
+                          ></el-input>
                         </el-form-item>
-                        <el-form-item :label="panel_txt.window.tag.tip"><span>{{window.tip}}</span><input type="text" name="connect" style="display:none;" v-model="window.tip"></el-form-item>
+                        <el-form-item :label="panel_txt.window.tag.tip"><span>{{panel_txt.window.tag.tip}}</span><span>{{window.tip}}</span><input type="text" name="connect" style="display:none;" v-model="window.tip"></el-form-item>
                       </el-form>
                       <template #footer>
                         <span class="dialog-footer">
@@ -455,7 +467,7 @@
             </div>
           </el-col>
         </el-row>
-        <flow-consoles class="FlowConsoles" ref="FlowConsoles"></flow-consoles>
+        <flow-consoles class="FlowConsoles" ref="FlowConsoles" :editableTabsValue="editableTabsValue"></flow-consoles>
       </el-col>
     </el-row>
 
@@ -1324,10 +1336,9 @@ export default defineComponent({
             console.log("window.lineFrom", window.lineFrom);
           } else if (node.type === "tag") {
             if (findLinefrom(window)) {
-              window.tip =
-                panel_txt.value.window.tag.tip + findLinefrom(window);
+              window.tip = findLinefrom(window);
             } else {
-              window.tip = "no connect";
+              window.tip = "none";
             }
             console.log(window.tip);
           }
@@ -1434,9 +1445,9 @@ export default defineComponent({
         let formData = new FormData($(".form")[i]);
         // console.log("formData.get('file')", );
         formData.forEach((value, key) => {
+          console.log(i, key, ":", value);
           if (key != "file") {
             formdata.append("node[" + i + "][" + key + "]", value);
-            console.log(i, key, ":", value);
           } else {
             if (value) {
               formdata.append("file[]", value);
@@ -1444,8 +1455,11 @@ export default defineComponent({
               formdata.append("file[]", "null");
             }
           }
-          if (value == "mat" || value == "modelfiletype") {
-            formdata.append("file[]", "null");
+          if (value == "mat" || key == "connect") {
+            console.log(1);
+            formdata.append("file[]", new File([], "1"));
+          } else if (key == "hasweight") {
+            formdata.append("file[]", new File([], "1"));
           }
         });
       }
