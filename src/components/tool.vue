@@ -189,7 +189,6 @@ export default defineComponent({
         }
       } else {
         console.log("switch_lan", txt.value);
-
         txt.value = get_chinese().tool;
       }
     }

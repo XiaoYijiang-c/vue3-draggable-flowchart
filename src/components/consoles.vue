@@ -21,12 +21,24 @@
           </div>
         </div>
       </span>
-      <div class="rightTool" @click="unfoldConsole" v-show="lastH <= 40">
-        <el-icon size="bigSize"><caret-top /></el-icon>
-      </div>
-      <div class="rightTool" @click="foldConsole" v-show="lastH > 40">
-        <el-icon size="bigSize"><caret-bottom /></el-icon>
-      </div>
+      <span style="float: right">
+        <el-button type="text" @click="open" style="margin-right: 10px"
+          >打开</el-button
+        >
+        <el-button
+          type="text"
+          @click="copyConsole"
+          style="margin-right: 10px"
+          >{{ txt.copy }}</el-button
+        >
+
+        <div class="rightTool" @click="unfoldConsole" v-show="lastH <= 40">
+          <el-icon size="bigSize"><caret-top /></el-icon>
+        </div>
+        <div class="rightTool" @click="foldConsole" v-show="lastH > 40">
+          <el-icon size="bigSize"><caret-bottom /></el-icon>
+        </div>
+      </span>
     </div>
     <div
       class="consolePanel"
@@ -36,18 +48,22 @@
       <div
         v-show="cons.table"
         class="consolePanelData"
+        id="consolePanelData"
         :style="'height:' + (lastH - 40) + 'px;'"
       >
-        <div v-for="sp in consoleData" :key="sp">
+        <div v-for="sp in cons.consoleData" :key="sp">
           {{ sp }}
         </div>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script>
+import { get_chinese } from "./js/Chinese";
+import { get_English } from "./js/English";
 import { defineComponent, reactive, ref, watch } from "vue";
 import { CaretTop, CaretBottom, CloseBold } from "@element-plus/icons-vue";
+import { ElNotification } from "element-plus";
 import axios from "axios";
 import $ from "jquery";
 export default defineComponent({
@@ -59,22 +75,39 @@ export default defineComponent({
   },
   props: { editableTabsValue: String },
   setup(props) {
+    let txt = ref({});
+    let notif = "";
+    txt.value = get_chinese().consoles;
+    function switch_status(status) {
+      if (status) {
+        txt.value = get_English().consoles;
+      } else {
+        txt.value = get_chinese().consoles;
+      }
+    }
     // showContent[0].scrollTop = showContent[0].scrollHeight;
-
+    // window.open(
+    //   // "http://10.133.60.229:8080/Users/luomimi/Desktop/1.pdf",
+    //   "",
+    //   "_blank"
+    // );
     const table = ref(false);
     const mouseType = ref("default");
     let lastY = ref();
     let lastH = ref(40);
-    let consoleData = ref([]);
+    let consoleData = ref(["1", "1"]);
     let consoleSet = reactive({
       consoleList: [
         {
           id: 1,
           table: false,
+          consoleData: ref(["1", "1"]),
         },
       ],
     });
+    console.log(consoleSet.consoleList[0]);
     let console_update = null;
+
     watch(table, (newVal, oldVal) => {
       console.log("11111", newVal, oldVal);
 
@@ -94,18 +127,92 @@ export default defineComponent({
           }
           axios.post("http://127.0.0.1:5001", data).then((res) => {
             // item.consoleData = res.data.result;
-            consoleData.value = res.data.result;
+            for (let item of consoleSet.consoleList) {
+              if (item.table) {
+                item.consoleData = res.data.result;
+                break;
+              }
+            }
             let showContent = $(".consolePanelData");
             showContent[0].scrollTop = showContent[0].scrollHeight;
+            if (res.data.finish == "finish") {
+              clearInterval(console_update);
+              axios
+                .post("http://127.0.0.1:5000", {
+                  responseType: "arraybuffer",
+                  operation: "getsave",
+                  ...data,
+                })
+                .then((res) => {
+                  console.log("res.data", res.data);
+                  // const binaryData = [];
+                  // binaryData.push(res);
+                  // let url = window.URL.createObjectURL(res);
+                  // window.open(url, "_blank");
+                  let result = res.data.result;
+                  for (let st of result) {
+                    // let str = st.url;
+                    notif +=
+                      "<li>" +
+                      st.name +
+                      ":<button onclick='openWindow(" +
+                      st.url +
+                      ")'>" +
+                      st.name +
+                      "</button>" +
+                      "</li>";
+                  }
+                  open();
+                });
+            }
             console.log("consoleData.value", consoleData.value, res);
           });
         }, 5000);
       } else {
         console.log("clear");
-
         clearInterval(console_update);
       }
     });
+    function open() {
+      ElNotification({
+        title: "Finish",
+        dangerouslyUseHTMLString: true,
+        message: "<ul>" + notif + "</ul>",
+        position: "bottom-right",
+        duration: 0,
+      });
+    }
+    function openWindow(url) {
+      console.log("url", url);
+      window.open("http://127.0.0.1:5000" + url, "_blank");
+    }
+    function copyConsole() {
+      const clipboardObj = navigator.clipboard;
+      let data = "";
+      for (let item of consoleSet.consoleList) {
+        if (item.table) {
+          for (let sp of item.consoleData) {
+            data += sp;
+            data += "\n";
+          }
+        }
+      }
+      if (data) {
+        clipboardObj.writeText(data).then(() => {
+          ElNotification({
+            title: "Success",
+            message: "复制成功:" + data,
+            type: "success",
+          });
+        });
+      } else {
+        ElNotification({
+          title: "Warning",
+          message: "未打开任何控制台",
+          type: "warning",
+        });
+      }
+    }
     function getID() {
       for (let Console of consoleSet.consoleList) {
         if (Console.table == true) return Console.id;
@@ -159,6 +266,7 @@ export default defineComponent({
       let cons = {
         id: id,
         table: false,
+        consoleData: [],
       };
       list.push(cons);
     }
@@ -189,6 +297,10 @@ export default defineComponent({
       consoleData,
       tinySize: 10,
       bigSize: 20,
+      txt,
+      switch_status,
+      open,
+      openWindow,
       mouseDown,
       mouseUp,
       showConsole,
@@ -197,6 +309,7 @@ export default defineComponent({
       unfoldConsole,
       foldConsole,
       getID,
+      copyConsole,
     };
   },
 });
@@ -234,6 +347,7 @@ li {
 }
 .consolePanel {
   padding-left: 30px;
+  background-color: rgb(231, 231, 231);
 }
 .tool_console {
   height: 40px;

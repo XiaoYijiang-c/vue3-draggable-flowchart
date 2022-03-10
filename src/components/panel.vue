@@ -530,10 +530,12 @@ export default defineComponent({
       if (switch_status.value) {
         panel_txt.value = get_English().panel;
         flowTool.value.switch_status(true);
+        FlowConsoles.value.switch_status(true);
         switch_status.value = get_English().status;
       } else {
         panel_txt.value = get_chinese().panel;
         flowTool.value.switch_status(false);
+        FlowConsoles.value.switch_status(false);
         switch_status.value = get_chinese().status;
       }
     }

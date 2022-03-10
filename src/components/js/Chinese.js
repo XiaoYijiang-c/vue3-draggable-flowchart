@@ -1,7 +1,7 @@
 var chinese = {
     status: true,
     consoles: {
-
+        copy: "复制"
     },
     node: {},
     panel: {

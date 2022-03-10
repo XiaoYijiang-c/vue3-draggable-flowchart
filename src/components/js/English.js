@@ -1,7 +1,7 @@
 var English = {
     status: false,
     consoles: {
-
+        copy: "copy"
     },
     node: {},
     panel: {
