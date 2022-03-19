@@ -72,6 +72,9 @@
                   <div v-show="element.type == 'test'">
                     <i :class="element.ico"></i>{{ txt.c_name.test }}
                   </div>
+                  <div v-show="element.type == 'color'">
+                    <i :class="element.ico"></i>{{ txt.c_name.color }}
+                  </div>
                 </el-menu-item>
               </template>
             </draggable>
@@ -217,6 +220,11 @@ export default defineComponent({
             {
               type: "tag",
               name: txt.value.c_name.tag,
+              ico: "el-icon-odometer",
+            },
+            {
+              type: "color",
+              name: txt.value.c_name.color,
               ico: "el-icon-odometer",
             },
             {

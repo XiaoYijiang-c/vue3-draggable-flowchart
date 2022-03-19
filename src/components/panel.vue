@@ -503,7 +503,140 @@
                           >
                         </span>
                       </template>
-                    </el-dialog>            
+                    </el-dialog>
+                    <!-- v-if="window.type === 'color'" --> 
+                    <el-dialog
+                      title="DataList"
+                      v-model="window.nodeFormVisible"
+                      v-if="window.type === 'color'"
+                      center
+                    >
+                      <el-form
+                        class="form"
+                        ref="dataForm"
+                        label-width="140px"
+                        label-position="left"
+                        :id="'form' + window.wid"
+                      ><el-form-item label="isgrid">
+                        <el-input
+                            name="node-id"
+                            v-model="window.id"
+                            style="display:none"
+                          ></el-input>
+                          <el-radio-group v-model="window.isgrid">
+                            <el-radio-button label="1" name="isgrid"
+                              >Y</el-radio-button
+                            >
+                            <el-radio-button label="0" name="isgrid"
+                              >N</el-radio-button
+                            >
+                          </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="grid_n_neighbors" v-if="window.isgrid==1">
+                          <el-input v-model="window.grid_n_neighbors" name="grid_n_neighbors" style="display:none;"/>
+                          min:
+                          <el-input-number v-model="window.grid_n.min" size="small" controls-position="right"/>
+                          max:
+                          <el-input-number v-model="window.grid_n.max" size="small" controls-position="right"/>
+                          step:
+                          <el-input-number v-model="window.grid_n.step" size="small" controls-position="right"/>
+                          
+                        </el-form-item>
+                        <el-form-item label="grid_min_dist" v-if="window.isgrid==1">
+                          <el-input v-model="window.grid_min_dist" name="grid_min_dist" style="display:none;"/>
+                          min:
+                          <el-input-number v-model="window.grid_m.min" size="small" controls-position="right" @change="window.grid_min_dist=(String(window.grid_m.min)+' '+String(window.grid_m.max)+' '+String(window.grid_m.step));"/>
+                          max:
+                          <el-input-number v-model="window.grid_m.max" size="small" controls-position="right" @change="window.grid_min_dist=(String(window.grid_m.min)+' '+String(window.grid_m.max)+' '+String(window.grid_m.step));"/>
+                          step:
+                          <el-input-number v-model="window.grid_m.step" size="small" controls-position="right" @change="window.grid_min_dist=(String(window.grid_m.min)+' '+String(window.grid_m.max)+' '+String(window.grid_m.step));"/>
+                        </el-form-item>
+                        <el-form-item label="n_neighbors" v-if="window.isgrid==0">
+                          <el-input v-model="window.n_neighbors" name="n_neighbors"/>
+                        </el-form-item>
+                        <el-form-item label="min_dist" v-if="window.isgrid==0">
+                          <el-input v-model="window.min_dist" name="min_dist"/>
+                        </el-form-item>
+                        <el-form-item label="figWidth">
+                          <el-input v-model="window.figWidth" name="figWidth"/>
+                        </el-form-item>
+                        <el-form-item label="figHeight">
+                          <el-input v-model="window.figHeight" name="figHeight"/>
+                        </el-form-item>
+                        <el-form-item label="metric">
+                          <el-cascader v-model="window.metric" :options="options_metric" @change="handleChange" />
+                        </el-form-item>
+                        <el-form-item label="istheme">
+                          <el-radio-group v-model="window.istheme">
+                            <el-radio-button label="1" name="istheme"
+                              >Y</el-radio-button
+                            >
+                            <el-radio-button label="0" name="istheme"
+                              >N</el-radio-button
+                            >
+                          </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="layerIndex">
+                          has:{{window.layerIndexHas}}
+                          <el-input v-model="window.layerIndex" name="layerIndex"/>
+                        </el-form-item>
+                        <el-form-item label="theme" v-if="window.istheme=='1'">
+                          <el-select v-model="window.theme" class="m-2" placeholder="Select" size="large">
+                          <el-option
+                            v-for="item in options_theme"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                          />
+                        </el-select>
+                        </el-form-item>
+                        <el-form-item label="color_key_cmap"  v-if="window.istheme=='0'">
+                          <!-- <el-autocomplete
+                            v-model="window.cmap_input"
+                            :fetch-suggestions="querySearch"
+                            :trigger-on-focus="false"
+                            class="inline-input"
+                            placeholder="Please Input"
+                            @select="handleSelect"
+                          /> -->
+                          <el-cascader v-model="window.cmap_input" :options="options_CKC" @change="handleChange" />
+                        </el-form-item>
+                        <el-form-item label="background"  v-if="window.istheme=='0'">
+                          <el-autocomplete
+                            v-model="window.background"
+                            :fetch-suggestions="querySearch"
+                            :trigger-on-focus="false"
+                            class="inline-input"
+                            placeholder="Please Input"
+                            @select="handleSelect"
+                          />
+                        </el-form-item>
+                        <el-form-item label="dimension">
+                          <el-select v-model="window.dimensionReduceMethod" class="m-2" placeholder="Select" size="large">
+                          <el-option
+                            v-for="item in options_dimensionReduceMethod"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                          />
+                        </el-select>
+                        </el-form-item>
+                      </el-form>
+                      <template #footer>
+                        <span class="dialog-footer">
+                          <el-button @click="window.nodeFormVisible = false"
+                            >{{panel_txt.window.footer.cancel}}</el-button
+                          >
+                          <el-button
+                            type="primary"
+                            @click="
+                              (window.nodeFormVisible = false)
+                            "
+                            >{{panel_txt.window.footer.confirm}}</el-button
+                          >
+                        </span>
+                      </template>
+                    </el-dialog>                 
                   </template>
             </div>
           </el-col>
@@ -520,14 +653,7 @@
   </div>
 </template>
 <script>
-import {
-  defineComponent,
-  reactive,
-  nextTick,
-  ref,
-  watch,
-  onMounted,
-} from "vue";
+import { defineComponent, reactive, nextTick, ref, onMounted } from "vue";
 import { jsPlumb } from "jsplumb";
 import { ElMessageBox } from "element-plus";
 import { ElMessage } from "element-plus";
@@ -563,7 +689,549 @@ export default defineComponent({
     const Tabs = ref(null);
     onMounted(() => {
       IndexLoading();
+      restaurants.value = loadAll();
     });
+    const restaurants = ref([]);
+    const loadAll = () => {
+      return [{ value: "ccy" }, { value: "cey" }, { value: "cdy" }];
+    };
+    const options_metric = [
+      {
+        value: "Minkowski style metrics",
+        label: "Minkowski style metrics",
+        children: [
+          {
+            value: "euclidean",
+            label: "euclidean",
+          },
+          {
+            value: "manhattan",
+            label: "manhattan",
+          },
+          {
+            value: "chebyshev",
+            label: "chebyshev",
+          },
+          {
+            value: "minkowski",
+            label: "minkowski",
+          },
+        ],
+      },
+      {
+        value: "Miscellaneous spatial metrics",
+        label: "Miscellaneous spatial metrics",
+        children: [
+          {
+            value: "canberra",
+            label: "canberra",
+          },
+          {
+            value: "braycurtis",
+            label: "braycurtis",
+          },
+          {
+            value: "haversine",
+            label: "haversine",
+          },
+        ],
+      },
+      {
+        value: "Normalized spatial metrics",
+        label: "Normalized spatial metrics",
+        children: [
+          {
+            value: "mahalanobis",
+            label: "mahalanobis",
+          },
+          {
+            value: "wminkowski",
+            label: "wminkowski",
+          },
+          {
+            value: "seuclidean",
+            label: "seuclidean",
+          },
+        ],
+      },
+      {
+        value: "Angular and correlation metrics",
+        label: "Angular and correlation metrics",
+        children: [
+          {
+            value: "cosine",
+            label: "cosine",
+          },
+          {
+            value: "correlation",
+            label: "correlation",
+          },
+        ],
+      },
+      {
+        value: "Metrics for binary data",
+        label: "Metrics for binary data",
+        children: [
+          {
+            value: "hamming",
+            label: "hamming",
+          },
+          {
+            value: "jaccard",
+            label: "jaccard",
+          },
+          {
+            value: "dice",
+            label: "dice",
+          },
+          {
+            value: "russellrao",
+            label: "russellrao",
+          },
+          {
+            value: "kulsinski",
+            label: "kulsinski",
+          },
+          {
+            value: "rogerstanimoto",
+            label: "rogerstanimoto",
+          },
+          {
+            value: "sokalmichener",
+            label: "sokalmichener",
+          },
+          {
+            value: "sokalsneath",
+            label: "sokalsneath",
+          },
+          {
+            value: "yule",
+            label: "yule",
+          },
+        ],
+      },
+    ];
+    const options_CKC = [
+      {
+        value: "Perceptually Uniform Sequential",
+        label: "Perceptually Uniform Sequential",
+        children: [
+          {
+            value: "viridis",
+            label: "viridis",
+          },
+          {
+            value: "plasma",
+            label: "plasma",
+          },
+          {
+            value: "inferno",
+            label: "inferno",
+          },
+          {
+            value: "magma",
+            label: "magma",
+          },
+          {
+            value: "cividis",
+            label: "cividis",
+          },
+        ],
+      },
+      {
+        value: "Sequential",
+        label: "Sequential",
+        children: [
+          {
+            value: "Greys",
+            label: "Greys",
+          },
+          {
+            value: "Purples",
+            label: "Purples",
+          },
+          {
+            value: "Blues",
+            label: "Blues",
+          },
+          {
+            value: "Greens",
+            label: "Greens",
+          },
+          {
+            value: "Oranges",
+            label: "Oranges",
+          },
+          {
+            value: "Reds",
+            label: "Reds",
+          },
+          {
+            value: "YlOrBr",
+            label: "YlOrBr",
+          },
+          {
+            value: "YlOrRd",
+            label: "YlOrRd",
+          },
+          {
+            value: "OrRd",
+            label: "OrRd",
+          },
+          {
+            value: "PuRd",
+            label: "PuRd",
+          },
+          {
+            value: "RdPu",
+            label: "RdPu",
+          },
+          {
+            value: "BuPu",
+            label: "BuPu",
+          },
+          {
+            value: "GnBu",
+            label: "GnBu",
+          },
+          {
+            value: "PuBu",
+            label: "PuBu",
+          },
+          {
+            value: "YlGnBu",
+            label: "YlGnBu",
+          },
+          {
+            value: "PuBuGn",
+            label: "PuBuGn",
+          },
+          {
+            value: "BuGn",
+            label: "BuGn",
+          },
+          {
+            value: "YlGn",
+            label: "YlGn",
+          },
+        ],
+      },
+      {
+        value: "Sequential2",
+        label: "Sequential2",
+        children: [
+          {
+            value: "binary",
+            label: "binary",
+          },
+          {
+            value: "gist_yarg",
+            label: "gist_yarg",
+          },
+          {
+            value: "gist_gray",
+            label: "gist_gray",
+          },
+          {
+            value: "gray",
+            label: "gray",
+          },
+          {
+            value: "bone",
+            label: "bone",
+          },
+          {
+            value: "pink",
+            label: "pink",
+          },
+          {
+            value: "spring",
+            label: "spring",
+          },
+          {
+            value: "summer",
+            label: "summer",
+          },
+          {
+            value: "autumn",
+            label: "autumn",
+          },
+          {
+            value: "winter",
+            label: "winter",
+          },
+          {
+            value: "cool",
+            label: "cool",
+          },
+          {
+            value: "Wistia",
+            label: "Wistia",
+          },
+          {
+            value: "hot",
+            label: "hot",
+          },
+          {
+            value: "afmhot",
+            label: "afmhot",
+          },
+          {
+            value: "gist_heat",
+            label: "gist_heat",
+          },
+          {
+            value: "copper",
+            label: "copper",
+          },
+        ],
+      },
+      {
+        value: "Diverging",
+        label: "Diverging",
+        children: [
+          {
+            value: "PiYG",
+            label: "PiYG",
+          },
+          {
+            value: "PRGn",
+            label: "PRGn",
+          },
+          {
+            value: "BrBG",
+            label: "BrBG",
+          },
+          {
+            value: "PuOr",
+            label: "PuOr",
+          },
+          {
+            value: "RdGy",
+            label: "RdGy",
+          },
+          {
+            value: "RdBu",
+            label: "RdBu",
+          },
+          {
+            value: "RdYlBu",
+            label: "RdYlBu",
+          },
+          {
+            value: "RdYlGn",
+            label: "RdYlGn",
+          },
+          {
+            value: "Spectral",
+            label: "Spectral",
+          },
+          {
+            value: "coolwarm",
+            label: "coolwarm",
+          },
+          {
+            value: "bwr",
+            label: "bwr",
+          },
+          {
+            value: "seismic",
+            label: "seismic",
+          },
+        ],
+      },
+      {
+        value: "Cyclic",
+        label: "Cyclic",
+        children: [
+          {
+            value: "twilight",
+            label: "twilight",
+          },
+          {
+            value: "twilight_shifted",
+            label: "twilight_shifted",
+          },
+          {
+            value: "hsv",
+            label: "hsv",
+          },
+        ],
+      },
+      {
+        value: "Qualitative",
+        label: "Qualitative",
+        children: [
+          {
+            value: "Pastel1",
+            label: "Pastel1",
+          },
+          {
+            value: "Pastel2",
+            label: "Pastel2",
+          },
+          {
+            value: "Paired",
+            label: "Paired",
+          },
+          {
+            value: "Accent",
+            label: "Accent",
+          },
+          {
+            value: "Dark2",
+            label: "Dark2",
+          },
+          {
+            value: "Set1",
+            label: "Set1",
+          },
+          {
+            value: "Set2",
+            label: "Set2",
+          },
+          {
+            value: "Set3",
+            label: "Set3",
+          },
+          {
+            value: "tab10",
+            label: "tab10",
+          },
+          {
+            value: "tab20",
+            label: "tab20",
+          },
+          {
+            value: "tab20b",
+            label: "tab20b",
+          },
+          {
+            value: "tab20c",
+            label: "tab20c",
+          },
+        ],
+      },
+      {
+        value: "Miscellaneous",
+        label: "Miscellaneous",
+        children: [
+          {
+            value: "flag",
+            label: "flag",
+          },
+          {
+            value: "prism",
+            label: "prism",
+          },
+          {
+            value: "ocean",
+            label: "ocean",
+          },
+          {
+            value: "gist_earth",
+            label: "gist_earth",
+          },
+          {
+            value: "terrain",
+            label: "terrain",
+          },
+          {
+            value: "gist_stern",
+            label: "gist_stern",
+          },
+          {
+            value: "gnuplot",
+            label: "gnuplot",
+          },
+          {
+            value: "gnuplot2",
+            label: "gnuplot2",
+          },
+          {
+            value: "CMRmap",
+            label: "CMRmap",
+          },
+          {
+            value: "cubehelix",
+            label: "cubehelix",
+          },
+          {
+            value: "brg",
+            label: "brg",
+          },
+          {
+            value: "gist_rainbow",
+            label: "gist_rainbow",
+          },
+          {
+            value: "rainbow",
+            label: "rainbow",
+          },
+          {
+            value: "jet",
+            label: "jet",
+          },
+          {
+            value: "nipy_spectral",
+            label: "nipy_spectral",
+          },
+          {
+            value: "gist_ncar",
+            label: "gist_ncar",
+          },
+        ],
+      },
+    ];
+    let options_dimensionReduceMethod = [
+      {
+        value: "max",
+        label: "Max",
+      },
+      {
+        value: "avg",
+        label: "Avg",
+      },
+      {
+        value: "min",
+        label: "Min",
+      },
+      {
+        value: "flatten",
+        label: "Flatten",
+      },
+    ];
+    let options_theme = [
+      { value: "blue", label: "Blue" },
+      { value: "red", label: "Red" },
+      { value: "green", label: "Green" },
+      { value: "inferno", label: "Inferno" },
+      { value: "fire", label: "Fire" },
+      { value: "viridis", label: "Viridis" },
+      { value: "darkblue", label: "Darkblue" },
+      { value: "darkred", label: "Darkred" },
+      { value: "darkgreen", label: "Darkgreen" },
+    ];
+    const createFilter = (queryString) => {
+      return (restaurant) => {
+        return (
+          restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) ===
+          0
+        );
+      };
+    };
+    const querySearch = (queryString, cb) => {
+      console.log("queryString", queryString);
+      const results = queryString
+        ? restaurants.value.filter(createFilter(queryString))
+        : restaurants.value;
+      // call callback function to return suggestions
+      cb(results);
+    };
+    const handleSelect = (item) => {
+      console.log(item);
+    };
+
     panel_txt.value = get_chinese().panel;
     console.log(panel_txt.value);
     let switch_status = ref(true);
@@ -636,9 +1304,6 @@ export default defineComponent({
     function deleteMeun(name) {
       flowTool.value.deleteMeun(name);
     }
-    watch(editableTabs.value, (newVal, oldVal) => {
-      console.log("11111", newVal, oldVal);
-    });
     function changeTabColor(name, color) {
       let child = document.getElementsByClassName("el-tabs__item");
       child.forEach((item) => {
@@ -989,6 +1654,7 @@ export default defineComponent({
             allJsPlumb.jsPlumb.jsplumbConnectOptions2
           );
         } else {
+          console.log("connect2");
           allJsPlumb.jsPlumb.connect(
             connParam,
             allJsPlumb.jsPlumb.jsplumbConnectOptions
@@ -1119,10 +1785,27 @@ export default defineComponent({
             .catch(() => {});
         });
         // 连线
+        // 定义新样式
+        // let setting = {
+        //   paintStyle: { stroke: "#E9BE37", strokeWidth: 1 },
+        //   connectorStyle: { stroke: "#E9BE37", strokeWidth: 1 },
+        //   connectorHoverStyle: { stroke: "#E9BE37", strokeWidth: 3 },
+        //   hoverPaintStyle: { stroke: "#E9BE37", strokeWidth: 3 },
+        // };
+        // 应用新样式
+        // allJsPlumb.jsPlumb.registerConnectionType("custom", setting);
+
         allJsPlumb.jsPlumb.bind("connection", function (evt) {
           let from = evt.source.id;
           let to = evt.target.id;
-
+          var connection = allJsPlumb.jsPlumb.getAllConnections();
+          console.log("CONNECTion", connection);
+          connection.map((item) => {
+            if (findWindow(item.targetId).type == "predict") {
+              item.setPaintStyle({ stroke: "red" });
+            }
+            // 重新绘制线颜色为红色
+          });
           list.lineList.push({
             from: from,
             to: to,
@@ -1143,6 +1826,13 @@ export default defineComponent({
           console.log("evt.sourceID", evt.sourceId);
           let to = evt.targetId;
           console.log("evt.targetID", evt.targetId);
+          // let win = findWindow(to);
+          // if (win.type == "predict") {
+          //   console.log("connect predict");
+          //   allJsPlumb.jsPlumb.importDefaults({
+          //     PaintStyle: { stroke: "pink", strokeWidth: 2 },
+          //   });
+          // }
           if (from === to) {
             ElMessage.error("不能连接自己");
             return false;
@@ -1233,6 +1923,33 @@ export default defineComponent({
           fileContent: "",
         }),
       };
+      let colorWindow = {
+        isgrid: ref("1"),
+        grid_n_neighbors: ref("0 10 0.1"),
+        grid_n: reactive({
+          min: 0,
+          max: 10,
+          step: 0.1,
+        }),
+        grid_min_dist: ref("0 10 0.1"),
+        grid_m: reactive({
+          min: 0,
+          max: 10,
+          step: 0.1,
+        }),
+        n_neighbors: ref(),
+        min_dist: ref(),
+        figWidth: ref(),
+        figHeight: ref(),
+        metric: ref(),
+        istheme: ref("1"),
+        layerIndexHas: ref("none"),
+        layerIndex: ref(),
+        theme: ref(),
+        cmap_input: ref(),
+        background: ref(),
+        dimensionReduceMethod: ref(),
+      };
       let basewindow = {
         id: "node" + index,
         wid: index,
@@ -1274,6 +1991,12 @@ export default defineComponent({
       } else if (wType == "predict") {
         let window = {
           ...predictWindow,
+          ...basewindow,
+        };
+        return window;
+      } else if (wType == "color") {
+        let window = {
+          ...colorWindow,
           ...basewindow,
         };
         return window;
@@ -1413,6 +2136,14 @@ export default defineComponent({
               window.tip = "none";
             }
             console.log(window.tip);
+          } else if (node.type === "color") {
+            let data = {
+              operation: "getlayer layer",
+              name: editableTabsValue.value,
+            };
+            axios.post(urls, data).then((res) => {
+              window.layerIndexHas = res.data.layerIndex;
+            });
           }
           break;
         }
@@ -1530,7 +2261,11 @@ export default defineComponent({
           if (value == "mat" || key == "connect") {
             console.log(1);
             formdata.append("file[]", new File([], "1"));
-          } else if (key == "hasweight" || value == "predict") {
+          } else if (
+            key == "hasweight" ||
+            value == "predict" ||
+            key == "isgrid"
+          ) {
             formdata.append("file[]", new File([], "1"));
           }
         });
@@ -1674,6 +2409,12 @@ export default defineComponent({
       FlowConsoles.value.addConsoleList();
     }
     return {
+      options_dimensionReduceMethod,
+      options_theme,
+      options_CKC,
+      options_metric,
+      handleSelect,
+      querySearch,
       switchLan,
       editableTabs,
       editableTabsValue,
@@ -1821,6 +2562,18 @@ p {
   display: flex;
   align-items: center;
   justify-self: center;
+}
+.select_list {
+  position: absolute;
+  width: 100%;
+  z-index: 999;
+  background-color: pink;
+}
+.example-block {
+  margin: 1rem;
+}
+.example-demonstration {
+  margin: 1rem;
 }
 /* .el-tabs__item.is-active {
   color: grey !important;

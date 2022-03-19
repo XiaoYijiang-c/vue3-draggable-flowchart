@@ -86,7 +86,7 @@ var chinese = {
             tag: "标签",
             train: "训练",
             test: "测试",
-            color: "?",
+            color: "layer",
             col: "列拼接",
             row: "行拼接"
         }

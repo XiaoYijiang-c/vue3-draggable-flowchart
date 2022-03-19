@@ -84,7 +84,7 @@ var English = {
             tag: "tag",
             train: "train",
             test: "test",
-            color: "?",
+            color: "layer",
             mat: "juzhen",
             col: "liepingjie",
             row: "hangpingjie"
