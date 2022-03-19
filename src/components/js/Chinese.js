@@ -61,6 +61,10 @@ var chinese = {
                 title: "标签",
                 tip: "连接矩阵:",
                 name: "标签名"
+            },
+            predict: {
+                title: "上传预测文件",
+                file_upload: "文件上传"
             }
         }
     },
@@ -76,11 +80,13 @@ var chinese = {
             txt: "上传纯序列文件",
             csv: "上传csv文件",
             zdy: "上传自定义模型",
+            predict: "上传预测文件",
             list: "Data Table",
             mat: "矩阵",
             tag: "标签",
             train: "训练",
             test: "测试",
+            color: "?",
             col: "列拼接",
             row: "行拼接"
         }

@@ -61,6 +61,10 @@ var English = {
                 title: "tag",
                 tip: "connect with",
                 name: "tag name"
+            },
+            predict: {
+                title: "predict",
+                file_upload: "upload"
             }
         }
     },
@@ -75,10 +79,12 @@ var English = {
             txt: "shagnchuanchunxuliewenjian",
             csv: "shangchuan csv wenjian",
             zdy: "shagnchuanzidingyimoxing",
+            predict: "predict",
             list: "Data Table",
             tag: "tag",
             train: "train",
             test: "test",
+            color: "?",
             mat: "juzhen",
             col: "liepingjie",
             row: "hangpingjie"

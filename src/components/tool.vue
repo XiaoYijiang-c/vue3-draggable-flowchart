@@ -2,36 +2,6 @@
   <div ref="tool" class="tool">
     <div>
       <el-menu :default-openeds="dataBase.defaultOpeneds">
-        <!-- <el-submenu
-          v-for="(menu, index) in dataBase.menuList"
-          :index="menu.type + index"
-          :key="menu.type + index"
-        >
-          <template #title>
-            <i :class="menu.ico"></i>
-            <span>{{ menu.name }}</span>
-          </template>
-          
-          <el-menu-item-group>
-            <draggable
-              @end="addNode"
-              @choose="move"
-              :list="menu.children"
-              item-key="name"
-              :options="dataBase.draggableOptions"
-            >
-              <template #item="{ element }">
-                <el-menu-item
-                  :index="element.type"
-                  :key="element.type"
-                  :type="element.type"
-                >
-                  <i :class="element.ico"></i>{{ element.name }}
-                </el-menu-item>
-              </template>
-            </draggable>
-          </el-menu-item-group>
-        </el-submenu> -->
         <el-submenu :index="dataBase.menuList[0].type + 1">
           <template #title>
             <i :class="dataBase.menuList[0].ico"></i>
@@ -59,6 +29,9 @@
                   </div>
                   <div v-show="element.type == 'zdy'">
                     <i :class="element.ico"></i>{{ txt.c_name.zdy }}
+                  </div>
+                  <div v-show="element.type == 'predict'">
+                    <i :class="element.ico"></i>{{ txt.c_name.predict }}
                   </div>
                 </el-menu-item>
               </template>
@@ -217,6 +190,11 @@ export default defineComponent({
             {
               type: "zdy",
               name: txt.value.c_name.zdy,
+              ico: "el-icon-odometer",
+            },
+            {
+              type: "predict",
+              name: txt.value.c_name.predict,
               ico: "el-icon-odometer",
             },
           ]),

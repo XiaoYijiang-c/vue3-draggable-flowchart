@@ -76,7 +76,7 @@ export default defineComponent({
   props: { editableTabsValue: String },
   setup(props) {
     let txt = ref({});
-    let notif = "";
+    let notif = ref("");
     txt.value = get_chinese().consoles;
     function switch_status(status) {
       if (status) {
@@ -85,12 +85,6 @@ export default defineComponent({
         txt.value = get_chinese().consoles;
       }
     }
-    // showContent[0].scrollTop = showContent[0].scrollHeight;
-    // window.open(
-    //   // "http://10.133.60.229:8080/Users/luomimi/Desktop/1.pdf",
-    //   "",
-    //   "_blank"
-    // );
     const table = ref(false);
     const mouseType = ref("default");
     let lastY = ref();
@@ -145,21 +139,18 @@ export default defineComponent({
                 })
                 .then((res) => {
                   console.log("res.data", res.data);
-                  // const binaryData = [];
-                  // binaryData.push(res);
-                  // let url = window.URL.createObjectURL(res);
-                  // window.open(url, "_blank");
                   let result = res.data.result;
+
                   for (let st of result) {
                     // let str = st.url;
-                    notif +=
+                    notif.value +=
                       "<li>" +
                       st.name +
-                      ":<button onclick='openWindow(" +
+                      ":<a href='" +
                       st.url +
-                      ")'>" +
+                      "'  target='_blank' >" +
                       st.name +
-                      "</button>" +
+                      "</a>" +
                       "</li>";
                   }
                   open();
@@ -177,14 +168,15 @@ export default defineComponent({
       ElNotification({
         title: "Finish",
         dangerouslyUseHTMLString: true,
-        message: "<ul>" + notif + "</ul>",
+        message: "<ul>" + notif.value + "</ul>",
         position: "bottom-right",
         duration: 0,
       });
     }
     function openWindow(url) {
-      console.log("url", url);
-      window.open("http://127.0.0.1:5000" + url, "_blank");
+      let urls = window.URL.createObjectURL("http://10.133.60.229:8080" + url);
+      console.log("urls", urls);
+      window.open(urls, "_blank");
     }
     function copyConsole() {
       const clipboardObj = navigator.clipboard;

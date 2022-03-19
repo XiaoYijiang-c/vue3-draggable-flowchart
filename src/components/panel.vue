@@ -307,6 +307,9 @@
                         <el-form-item label="epochs">
                           <el-input v-model="window.epochs" name="epochs"/>
                         </el-form-item>
+                        <el-form-item label="datasplitscale">
+                          <el-input-number v-model="window.datasplitscale" :min="0" :max="1" :step="0.01" name="datasplitscale"/>
+                        </el-form-item>
                         <el-input
                             name="dataType"
                             value="model"
@@ -462,7 +465,45 @@
                           >
                         </span>
                       </template>
-                    </el-dialog>              
+                    </el-dialog>   
+                    <!-- v-if="window.type === 'predict'" -->                    
+                    <el-dialog
+                      title="DataList"
+                      v-model="window.nodeFormVisible"
+                      v-if="window.type === 'predict'"
+                      center
+                    >
+                      <el-form
+                        class="form"
+                        ref="dataForm"
+                        label-width="140px"
+                        label-position="left"
+                        :id="'form' + window.wid"
+                      ><el-form-item :label="panel_txt.window.predict.file_upload" >
+                          <input
+                            type="file"
+                            name="file"
+                            :id="window.wid"
+                            class="file"
+                            @change="fileInfo(getFileContent, window)"
+                          />
+                        </el-form-item>
+                      </el-form>
+                      <template #footer>
+                        <span class="dialog-footer">
+                          <el-button @click="window.nodeFormVisible = false"
+                            >{{panel_txt.window.footer.cancel}}</el-button
+                          >
+                          <el-button
+                            type="primary"
+                            @click="
+                              (window.nodeFormVisible = false), changeNodeName(window),predict(window)
+                            "
+                            >{{panel_txt.window.footer.confirm}}</el-button
+                          >
+                        </span>
+                      </template>
+                    </el-dialog>            
                   </template>
             </div>
           </el-col>
@@ -878,6 +919,13 @@ export default defineComponent({
         // 动态锚点、提供了4个方向 Continuous、AutoDefault
         anchor: "Continuous",
       },
+      jsplumbConnectOptions2: {
+        isSource: true,
+        isTarget: true,
+        // 动态锚点、提供了4个方向 Continuous、AutoDefault
+        anchor: "Continuous",
+        paintStyle: { stroke: "pink", strokeWidth: 2 },
+      },
       jsplumbSourceOptions: {
         filter:
           ".flow-node-drag" /*"span"表示标签，".className"表示类，"#id"表示元素id*/,
@@ -934,10 +982,18 @@ export default defineComponent({
           source: line.from,
           target: line.to,
         };
-        allJsPlumb.jsPlumb.connect(
-          connParam,
-          allJsPlumb.jsPlumb.jsplumbConnectOptions
-        );
+        let win = findWindow(connParam.target);
+        if (win.type == "predict") {
+          allJsPlumb.jsPlumb.connect(
+            connParam,
+            allJsPlumb.jsPlumb.jsplumbConnectOptions2
+          );
+        } else {
+          allJsPlumb.jsPlumb.connect(
+            connParam,
+            allJsPlumb.jsPlumb.jsplumbConnectOptions
+          );
+        }
       }
       nextTick(() => {
         allJsPlumb.loadEasyFlowFinish = true;
@@ -1153,6 +1209,7 @@ export default defineComponent({
         fileType2: ref("1"),
         batch_size: ref(0),
         epochs: ref(0),
+        datasplitscale: ref(0),
       };
       let matwindow = {
         standardizing: ref("none"),
@@ -1168,6 +1225,13 @@ export default defineComponent({
         tip: ref(null),
         tagName: ref(null),
         inputValue: ref(null),
+      };
+      let predictWindow = {
+        FILE: reactive({
+          file: {},
+          fileName: "",
+          fileContent: "",
+        }),
       };
       let basewindow = {
         id: "node" + index,
@@ -1204,6 +1268,12 @@ export default defineComponent({
       } else if (wType == "tag") {
         let window = {
           ...tagwindow,
+          ...basewindow,
+        };
+        return window;
+      } else if (wType == "predict") {
+        let window = {
+          ...predictWindow,
           ...basewindow,
         };
         return window;
@@ -1460,7 +1530,7 @@ export default defineComponent({
           if (value == "mat" || key == "connect") {
             console.log(1);
             formdata.append("file[]", new File([], "1"));
-          } else if (key == "hasweight") {
+          } else if (key == "hasweight" || value == "predict") {
             formdata.append("file[]", new File([], "1"));
           }
         });
@@ -1494,7 +1564,31 @@ export default defineComponent({
       console.log("formData", window.wid);
       formData.append("name", editableTabsValue.value);
       formData.append("operation", "trymodel");
-
+      $.ajax({
+        type: "post",
+        url: urls,
+        // url: urls,
+        data: formData,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: (res) => {
+          ElMessage({
+            message: res,
+            type: "success",
+          });
+          console.log("res.response", res);
+        },
+        error: (err) => {
+          console.log(err);
+        },
+      });
+    }
+    function predict(window) {
+      let formData = new FormData($("#form" + window.wid)[0]);
+      console.log("formData", window.wid);
+      formData.append("name", editableTabsValue.value);
+      formData.append("operation", "predict");
       $.ajax({
         type: "post",
         url: urls,
@@ -1598,6 +1692,7 @@ export default defineComponent({
       list,
       nodes,
       flowTool,
+      predict,
       flowInfo,
       findLinefrom,
       isMAT,
