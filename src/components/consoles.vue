@@ -22,8 +22,23 @@
         </div>
       </span>
       <span style="float: right">
-        <el-button type="text" @click="open" style="margin-right: 10px"
-          >打开</el-button
+        <el-button
+          type="text"
+          @click="open(notif.outsave, 'Outsave')"
+          style="margin-right: 10px"
+          >打开Outsave</el-button
+        >
+        <el-button
+          type="text"
+          @click="open(notif.predict, 'Predict')"
+          style="margin-right: 10px"
+          >打开Predict</el-button
+        >
+        <el-button
+          type="text"
+          @click="open(notif.umap, 'umap')"
+          style="margin-right: 10px"
+          >打开umap</el-button
         >
         <el-button
           type="text"
@@ -76,7 +91,11 @@ export default defineComponent({
   props: { editableTabsValue: String },
   setup(props) {
     let txt = ref({});
-    let notif = ref("");
+    let notif = reactive({
+      outsave: "",
+      predict: "",
+      umap: "",
+    });
     txt.value = get_chinese().consoles;
     function switch_status(status) {
       if (status) {
@@ -89,13 +108,13 @@ export default defineComponent({
     const mouseType = ref("default");
     let lastY = ref();
     let lastH = ref(40);
-    let consoleData = ref(["1", "1"]);
+    let consoleData = ref([]);
     let consoleSet = reactive({
       consoleList: [
         {
           id: 1,
           table: false,
-          consoleData: ref(["1", "1"]),
+          consoleData: ref([]),
         },
       ],
     });
@@ -104,10 +123,7 @@ export default defineComponent({
 
     watch(table, (newVal, oldVal) => {
       console.log("11111", newVal, oldVal);
-
       if (newVal) {
-        console.log(props);
-
         console_update = setInterval(() => {
           let data = {
             name: props.editableTabsValue,
@@ -140,20 +156,45 @@ export default defineComponent({
                 .then((res) => {
                   console.log("res.data", res.data);
                   let result = res.data.result;
-
                   for (let st of result) {
                     // let str = st.url;
-                    notif.value +=
-                      "<li>" +
-                      st.name +
-                      ":<a href='" +
-                      st.url +
-                      "'  target='_blank' >" +
-                      st.name +
-                      "</a>" +
-                      "</li>";
+                    if (st.type === "outsave") {
+                      notif.outsave +=
+                        "<li>" +
+                        st.name +
+                        ":<a href='" +
+                        st.url +
+                        "'  target='_blank' >" +
+                        st.name +
+                        "</a>" +
+                        "</li>";
+                    } else if (st.type === "predict") {
+                      notif.predict +=
+                        "<li>" +
+                        st.name +
+                        ":<a href='" +
+                        st.url +
+                        "'  target='_blank' >" +
+                        st.name +
+                        "</a>" +
+                        "</li>";
+                    } else if (st.type === "umap") {
+                      notif.umap +=
+                        "<li>" +
+                        st.name +
+                        ":<a href='" +
+                        st.url +
+                        "'  target='_blank' >" +
+                        st.name +
+                        "</a>" +
+                        "</li>";
+                    }
                   }
-                  open();
+                  ElNotification({
+                    title: "Success",
+                    message: "图片加载完成",
+                    position: "top-right",
+                  });
                 });
             }
             console.log("consoleData.value", consoleData.value, res);
@@ -162,13 +203,16 @@ export default defineComponent({
       } else {
         console.log("clear");
         clearInterval(console_update);
+        notif.outsave = "";
+        notif.predict = "";
+        notif.umap = "";
       }
     });
-    function open() {
+    function open(data, type) {
       ElNotification({
-        title: "Finish",
+        title: type,
         dangerouslyUseHTMLString: true,
-        message: "<ul>" + notif.value + "</ul>",
+        message: "<ul>" + data + "</ul>",
         position: "bottom-right",
         duration: 0,
       });
@@ -290,6 +334,7 @@ export default defineComponent({
       tinySize: 10,
       bigSize: 20,
       txt,
+      notif,
       switch_status,
       open,
       openWindow,

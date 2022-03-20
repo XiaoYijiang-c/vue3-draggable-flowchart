@@ -7,6 +7,8 @@ var chinese = {
     panel: {
         top_meun: {
             upload: "上传流程",
+            upload_layer: "上传layer",
+            predict: "上传预测",
             clear: "清空",
             add_console: "添加控制台",
             add_tab: "添加实验",
@@ -66,6 +68,10 @@ var chinese = {
                 title: "上传预测文件",
                 file_upload: "文件上传"
             }
+        },
+        alertTxt: {
+            layer: "未发现layer",
+            layer_: "多个layer",
         }
     },
     tool: {
@@ -90,7 +96,8 @@ var chinese = {
             col: "列拼接",
             row: "行拼接"
         }
-    }
+    },
+
 }
 
 export function get_chinese() {

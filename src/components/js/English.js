@@ -7,6 +7,8 @@ var English = {
     panel: {
         top_meun: {
             upload: "shangchuanliucheng",
+            upload_layer: "uploadlayer",
+            predict: "uploadpredict",
             clear: "qingkong",
             add_console: "tianjiakongzhitai",
             add_tab: "tianjiashiyan",
@@ -66,6 +68,11 @@ var English = {
                 title: "predict",
                 file_upload: "upload"
             }
+        },
+        alertTxt: {
+            layer: "canno found layer",
+            layer_: "多个layer"
+
         }
     },
     tool: {

@@ -13,6 +13,13 @@
               <el-button type="info" icon="el-icon-document" @click="uploadFlow"
                 >{{panel_txt.top_meun.upload}}</el-button
               >
+              <el-button type="info" icon="el-icon-document" @click="uploadLayer"
+                >{{panel_txt.top_meun.upload_layer}}</el-button
+              >
+              <el-button type="info" icon="el-icon-document" @click="predict"
+                >{{panel_txt.top_meun.predict}}</el-button
+              >
+              
               <el-button
                 type="primary"
                 @click="dataReloadB"
@@ -63,12 +70,12 @@
               </el-tab-pane>
             </el-tabs>
             <el-dialog v-model="newTabdialogVisible" title="Tips" width="30%" draggable destroy-on-close>
-            <el-input v-model="newtabinput" placeholder="请输入新tab name"></el-input>
+            <el-input v-model="newtabinput"></el-input>
               <template #footer>
                 <span class="dialog-footer">
-                  <el-button @click="newTabdialogVisible = false">Cancel</el-button>
+                  <el-button @click="newTabdialogVisible = false">{{panel_txt.window.footer.cancel}}</el-button>
                   <el-button type="primary" @click="addTab"
-                    >Confirm</el-button
+                    >{{panel_txt.window.footer.confirm}}</el-button
                   >
                 </span>
               </template>
@@ -497,7 +504,7 @@
                           <el-button
                             type="primary"
                             @click="
-                              (window.nodeFormVisible = false), changeNodeName(window),predict(window)
+                              (window.nodeFormVisible = false), changeNodeName(window)
                             "
                             >{{panel_txt.window.footer.confirm}}</el-button
                           >
@@ -535,11 +542,11 @@
                         <el-form-item label="grid_n_neighbors" v-if="window.isgrid==1">
                           <el-input v-model="window.grid_n_neighbors" name="grid_n_neighbors" style="display:none;"/>
                           min:
-                          <el-input-number v-model="window.grid_n.min" size="small" controls-position="right"/>
+                          <el-input-number v-model="window.grid_n.min" size="small" controls-position="right" @change="window.grid_n_neighbors=(String(window.grid_n.min)+' '+String(window.grid_n.max)+' '+String(window.grid_n.step));"/>
                           max:
-                          <el-input-number v-model="window.grid_n.max" size="small" controls-position="right"/>
+                          <el-input-number v-model="window.grid_n.max" size="small" controls-position="right" @change="window.grid_n_neighbors=(String(window.grid_n.min)+' '+String(window.grid_n.max)+' '+String(window.grid_n.step));"/>
                           step:
-                          <el-input-number v-model="window.grid_n.step" size="small" controls-position="right"/>
+                          <el-input-number v-model="window.grid_n.step" size="small" controls-position="right" @change="window.grid_n_neighbors=(String(window.grid_n.min)+' '+String(window.grid_n.max)+' '+String(window.grid_n.step));"/>
                           
                         </el-form-item>
                         <el-form-item label="grid_min_dist" v-if="window.isgrid==1">
@@ -1928,27 +1935,27 @@ export default defineComponent({
         grid_n_neighbors: ref("0 10 0.1"),
         grid_n: reactive({
           min: 0,
-          max: 10,
-          step: 0.1,
+          max: 0,
+          step: 0,
         }),
         grid_min_dist: ref("0 10 0.1"),
         grid_m: reactive({
           min: 0,
-          max: 10,
-          step: 0.1,
+          max: 0,
+          step: 0,
         }),
-        n_neighbors: ref(),
-        min_dist: ref(),
-        figWidth: ref(),
-        figHeight: ref(),
-        metric: ref(),
+        n_neighbors: ref("15"),
+        min_dist: ref("0.1"),
+        figWidth: ref("800"),
+        figHeight: ref("800"),
+        metric: ref(""),
         istheme: ref("1"),
         layerIndexHas: ref("none"),
-        layerIndex: ref(),
+        layerIndex: ref("-2"),
         theme: ref(),
         cmap_input: ref(),
         background: ref(),
-        dimensionReduceMethod: ref(),
+        dimensionReduceMethod: ref("Max"),
       };
       let basewindow = {
         id: "node" + index,
@@ -2138,7 +2145,7 @@ export default defineComponent({
             console.log(window.tip);
           } else if (node.type === "color") {
             let data = {
-              operation: "getlayer layer",
+              operation: "getlayer",
               name: editableTabsValue.value,
             };
             axios.post(urls, data).then((res) => {
@@ -2294,6 +2301,37 @@ export default defineComponent({
         },
       });
     }
+    function uploadLayer() {
+      let flag = 0;
+      let layerWindow = undefined;
+      for (let item of list.windowList) {
+        if (item.type == "color") {
+          flag += 1;
+          layerWindow = item;
+        }
+      }
+      if (flag == 0) {
+        ElMessageBox.alert(panel_txt.value.alertTxt.layer, "ERROR", {
+          type: "warning",
+          confirmButtonText: "确定",
+        });
+      } else if (flag > 1) {
+        ElMessageBox.alert(panel_txt.value.alertTxt.layer_, "ERROR", {
+          type: "warning",
+          confirmButtonText: "确定",
+        });
+      } else {
+        console.log("layerWindow", layerWindow);
+        let data = {
+          operation: "layer",
+          name: editableTabsValue.value,
+          ...layerWindow,
+        };
+        axios.post(urls, data).then((res) => {
+          console.log(res);
+        });
+      }
+    }
     function checkModel(window) {
       let formData = new FormData($("#form" + window.wid)[0]);
       console.log("formData", window.wid);
@@ -2319,9 +2357,17 @@ export default defineComponent({
         },
       });
     }
-    function predict(window) {
-      let formData = new FormData($("#form" + window.wid)[0]);
-      console.log("formData", window.wid);
+    // 只能在当前画布上只有一个预测节点时
+    function predict() {
+      let wid = null;
+      for (let window of list.windowList) {
+        if (window.type == "predict") {
+          wid = window.wid;
+          break;
+        }
+      }
+      let formData = new FormData($("#form" + wid)[0]);
+      console.log("formData", wid);
       formData.append("name", editableTabsValue.value);
       formData.append("operation", "predict");
       $.ajax({
@@ -2446,6 +2492,7 @@ export default defineComponent({
       dataReloadB,
       dataEncodingType: ref(null),
       uploadFlow,
+      uploadLayer,
       checkModel,
       dataFromBack,
       addConsole,
