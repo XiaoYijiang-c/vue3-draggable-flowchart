@@ -4,7 +4,7 @@
       <el-menu :default-openeds="dataBase.defaultOpeneds">
         <el-submenu :index="dataBase.menuList[0].type + 1">
           <template #title>
-            <el-icon class="icon" :size="size" :color="color">
+            <el-icon class="icon" :size="size">
               <folder></folder>
             </el-icon>
             <span>{{ txt.f_name.upload_file }}</span>
@@ -24,22 +24,22 @@
                   :type="element.type"
                 >
                   <div v-show="element.type == 'txt'">
-                    <el-icon class="icon" :size="size" :color="color">
+                    <el-icon class="icon" :size="size">
                       <files></files> </el-icon
                     >{{ txt.c_name.txt }}
                   </div>
                   <div v-show="element.type == 'csv'">
-                    <el-icon class="icon" :size="size" :color="color">
+                    <el-icon class="icon" :size="size">
                       <files></files> </el-icon
                     >{{ txt.c_name.csv }}
                   </div>
                   <div v-show="element.type == 'zdy'">
-                    <el-icon class="icon" :size="size" :color="color">
+                    <el-icon class="icon" :size="size">
                       <document></document> </el-icon
                     >{{ txt.c_name.zdy }}
                   </div>
                   <div v-show="element.type == 'predict'">
-                    <el-icon class="icon" :size="size" :color="color">
+                    <el-icon class="icon" :size="size">
                       <files></files> </el-icon
                     >{{ txt.c_name.predict }}
                   </div>
@@ -50,7 +50,7 @@
         </el-submenu>
         <el-submenu :index="dataBase.menuList[1].type + 2">
           <template #title>
-            <el-icon class="icon" :size="size" :color="color">
+            <el-icon class="icon" :size="size">
               <refresh></refresh>
             </el-icon>
             <span>{{ txt.f_name.data_change }}</span>
@@ -70,33 +70,28 @@
                   :type="element.type"
                 >
                   <div v-show="element.type == 'list'">
-                    <el-icon class="icon" :size="size" :color="color"
-                      ><caret-right /></el-icon
+                    <el-icon class="icon" :size="size"><caret-right /></el-icon
                     >{{ txt.c_name.list }}
                   </div>
                   <div v-show="element.type == 'mat'">
-                    <el-icon class="icon" :size="size" :color="color">
-                      <grid></grid> </el-icon
+                    <el-icon class="icon" :size="size"> <grid></grid> </el-icon
                     >{{ txt.c_name.mat }}
                   </div>
                   <div v-show="element.type == 'tag'">
-                    <el-icon class="icon" :size="size" :color="color"
+                    <el-icon class="icon" :size="size"
                       ><collection-tag /></el-icon
                     >{{ txt.c_name.tag }}
                   </div>
                   <div v-show="element.type == 'train'">
-                    <el-icon class="icon" :size="size" :color="color"
-                      ><cpu /></el-icon
+                    <el-icon class="icon" :size="size"><cpu /></el-icon
                     >{{ txt.c_name.train }}
                   </div>
                   <div v-show="element.type == 'test'">
-                    <el-icon class="icon" :size="size" :color="color"
-                      ><cloudy /></el-icon
+                    <el-icon class="icon" :size="size"><cloudy /></el-icon
                     >{{ txt.c_name.test }}
                   </div>
                   <div v-show="element.type == 'color'">
-                    <el-icon class="icon" :size="size" :color="color"
-                      ><data-line /></el-icon
+                    <el-icon class="icon" :size="size"><data-line /></el-icon
                     >{{ txt.c_name.color }}
                   </div>
                 </el-menu-item>
@@ -106,7 +101,7 @@
         </el-submenu>
         <el-submenu :index="dataBase.menuList[2].type + 3">
           <template #title>
-            <el-icon class="icon" :size="size" :color="color"><Menu /></el-icon>
+            <el-icon class="icon" :size="size"><Menu /></el-icon>
             <span>{{ txt.f_name.mat_build }}</span>
           </template>
           <el-menu-item-group>
@@ -124,13 +119,12 @@
                   :type="element.type"
                 >
                   <div v-show="element.type == 'col'">
-                    <el-icon class="icon" :size="size" :color="color"
+                    <el-icon class="icon" :size="size"
                       ><Switch></Switch></el-icon
                     >{{ txt.c_name.col }}
                   </div>
                   <div v-show="element.type == 'row'">
-                    <el-icon class="icon" :size="size" :color="color"
-                      ><sort /></el-icon
+                    <el-icon class="icon" :size="size"><sort /></el-icon
                     >{{ txt.c_name.row }}
                   </div>
                 </el-menu-item>

@@ -14,7 +14,7 @@
       >
         <div class="cons">
           <el-button type="text" @click="showConsole(cons)"
-            >Console{{ cons.id }}</el-button
+            >{{ txt.consoleTabName }}{{ cons.id }}</el-button
           >
           <div class="deleteIcon" @click="deleteConsoleList(cons)">
             <el-icon size="tinySize"><close-bold /></el-icon>
@@ -26,19 +26,19 @@
           type="text"
           @click="open(notif.outsave, 'Outsave')"
           style="margin-right: 10px"
-          >打开Outsave</el-button
+          >{{ txt.outsave }}</el-button
         >
         <el-button
           type="text"
           @click="open(notif.predict, 'Predict')"
           style="margin-right: 10px"
-          >打开Predict</el-button
+          >{{ txt.predict }}</el-button
         >
         <el-button
           type="text"
           @click="open(notif.umap, 'umap')"
           style="margin-right: 10px"
-          >打开umap</el-button
+          >{{ txt.umap }}</el-button
         >
         <el-button
           type="text"
@@ -98,6 +98,7 @@ export default defineComponent({
     });
     txt.value = get_chinese().consoles;
     function switch_status(status) {
+      console.log("switch in console");
       if (status) {
         txt.value = get_English().consoles;
       } else {

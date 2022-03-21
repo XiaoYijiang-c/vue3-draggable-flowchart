@@ -68,7 +68,7 @@
               </el-tab-pane>
             </el-tabs>
             <el-dialog v-model="newTabdialogVisible" title="Tips" width="30%" draggable destroy-on-close>
-            <el-input v-model="newtabinput"></el-input>
+              <el-input v-model="newtabinput" ref="addinput"></el-input>
               <template #footer>
                 <span class="dialog-footer">
                   <el-button @click="newTabdialogVisible = false">{{panel_txt.window.footer.cancel}}</el-button>
@@ -473,7 +473,7 @@
                     </el-dialog>   
                     <!-- v-if="window.type === 'predict'" -->                    
                     <el-dialog
-                      title="DataList"
+                      :title="panel_txt.window.predict.title"
                       v-model="window.nodeFormVisible"
                       v-if="window.type === 'predict'"
                       center
@@ -511,7 +511,7 @@
                     </el-dialog>
                     <!-- v-if="window.type === 'color'" --> 
                     <el-dialog
-                      title="DataList"
+                      :title="panel_txt.window.color.title"
                       v-model="window.nodeFormVisible"
                       v-if="window.type === 'color'"
                       center
@@ -522,7 +522,7 @@
                         label-width="140px"
                         label-position="left"
                         :id="'form' + window.wid"
-                      ><el-form-item label="isgrid">
+                      ><el-form-item :label="panel_txt.window.color.isgrid">
                         <el-input
                             name="node-id"
                             v-model="window.id"
@@ -537,7 +537,7 @@
                             >
                           </el-radio-group>
                         </el-form-item>
-                        <el-form-item label="grid_n_neighbors" v-if="window.isgrid==1">
+                        <el-form-item :label="panel_txt.window.color.grid_n_neighbors" v-if="window.isgrid==1">
                           <el-input v-model="window.grid_n_neighbors" name="grid_n_neighbors" style="display:none;"/>
                           min:
                           <el-input-number v-model="window.grid_n.min" size="small" controls-position="right" @change="window.grid_n_neighbors=(String(window.grid_n.min)+' '+String(window.grid_n.max)+' '+String(window.grid_n.step));"/>
@@ -547,7 +547,7 @@
                           <el-input-number v-model="window.grid_n.step" size="small" controls-position="right" @change="window.grid_n_neighbors=(String(window.grid_n.min)+' '+String(window.grid_n.max)+' '+String(window.grid_n.step));"/>
                           
                         </el-form-item>
-                        <el-form-item label="grid_min_dist" v-if="window.isgrid==1">
+                        <el-form-item :label="panel_txt.window.color.grid_min_dist" v-if="window.isgrid==1">
                           <el-input v-model="window.grid_min_dist" name="grid_min_dist" style="display:none;"/>
                           min:
                           <el-input-number v-model="window.grid_m.min" size="small" controls-position="right" @change="window.grid_min_dist=(String(window.grid_m.min)+' '+String(window.grid_m.max)+' '+String(window.grid_m.step));"/>
@@ -556,22 +556,22 @@
                           step:
                           <el-input-number v-model="window.grid_m.step" size="small" controls-position="right" @change="window.grid_min_dist=(String(window.grid_m.min)+' '+String(window.grid_m.max)+' '+String(window.grid_m.step));"/>
                         </el-form-item>
-                        <el-form-item label="n_neighbors" v-if="window.isgrid==0">
+                        <el-form-item :label="panel_txt.window.color.n_neighbors" v-if="window.isgrid==0">
                           <el-input v-model="window.n_neighbors" name="n_neighbors"/>
                         </el-form-item>
-                        <el-form-item label="min_dist" v-if="window.isgrid==0">
+                        <el-form-item :label="panel_txt.window.color.min_dist" v-if="window.isgrid==0">
                           <el-input v-model="window.min_dist" name="min_dist"/>
                         </el-form-item>
-                        <el-form-item label="figWidth">
+                        <el-form-item :label="panel_txt.window.color.figWidth">
                           <el-input v-model="window.figWidth" name="figWidth"/>
                         </el-form-item>
-                        <el-form-item label="figHeight">
+                        <el-form-item :label="panel_txt.window.color.figHeight">
                           <el-input v-model="window.figHeight" name="figHeight"/>
                         </el-form-item>
-                        <el-form-item label="metric">
+                        <el-form-item :label="panel_txt.window.color.metric">
                           <el-cascader v-model="window.metric" :options="options_metric" @change="handleChange" />
                         </el-form-item>
-                        <el-form-item label="istheme">
+                        <el-form-item :label="panel_txt.window.color.istheme">
                           <el-radio-group v-model="window.istheme">
                             <el-radio-button label="1" name="istheme"
                               >Y</el-radio-button
@@ -581,11 +581,11 @@
                             >
                           </el-radio-group>
                         </el-form-item>
-                        <el-form-item label="layerIndex">
+                        <el-form-item :label="panel_txt.window.color.layerIndex">
                           has:{{window.layerIndexHas}}
                           <el-input v-model="window.layerIndex" name="layerIndex"/>
                         </el-form-item>
-                        <el-form-item label="theme" v-if="window.istheme=='1'">
+                        <el-form-item :label="panel_txt.window.color.theme" v-if="window.istheme=='1'">
                           <el-select v-model="window.theme" class="m-2" placeholder="Select" size="large">
                           <el-option
                             v-for="item in options_theme"
@@ -595,7 +595,7 @@
                           />
                         </el-select>
                         </el-form-item>
-                        <el-form-item label="color_key_cmap"  v-if="window.istheme=='0'">
+                        <el-form-item :label="panel_txt.window.color.color_key_cmap"  v-if="window.istheme=='0'">
                           <!-- <el-autocomplete
                             v-model="window.cmap_input"
                             :fetch-suggestions="querySearch"
@@ -606,7 +606,7 @@
                           /> -->
                           <el-cascader v-model="window.cmap_input" :options="options_CKC" @change="handleChange" />
                         </el-form-item>
-                        <el-form-item label="background"  v-if="window.istheme=='0'">
+                        <el-form-item :label="panel_txt.window.color.background"  v-if="window.istheme=='0'">
                           <el-autocomplete
                             v-model="window.background"
                             :fetch-suggestions="querySearch"
@@ -616,7 +616,7 @@
                             @select="handleSelect"
                           />
                         </el-form-item>
-                        <el-form-item label="dimension">
+                        <el-form-item :label="panel_txt.window.color.dimensionReduceMethod">
                           <el-select v-model="window.dimensionReduceMethod" class="m-2" placeholder="Select" size="large">
                           <el-option
                             v-for="item in options_dimensionReduceMethod"
@@ -688,6 +688,7 @@ export default defineComponent({
     let urls = "http://182.92.194.235:8000/users/register";
     // let urls = "http://127.0.0.1:5000";
     const flowTool = ref(null);
+    const addinput = ref(null);
     const flowInfo = ref(null);
     const FlowConsoles = ref();
     const panel_txt = ref({});
@@ -1352,6 +1353,9 @@ export default defineComponent({
     }
     function openAddtab() {
       newTabdialogVisible.value = true;
+      nextTick(() => {
+        addinput.value.focus();
+      });
     }
     const addTab = () => {
       let flag = true;
@@ -1361,10 +1365,14 @@ export default defineComponent({
         console.log("addFalse");
         newTabdialogVisible.value = false;
         flag = false;
-        ElMessageBox.alert("未输入新tab name", "错误", {
-          type: "warning",
-          confirmButtonText: "确定",
-        });
+        ElMessageBox.alert(
+          panel_txt.value.alertTxt.addTab,
+          panel_txt.value.alertTxt.addTabTitle,
+          {
+            type: "warning",
+            confirmButtonText: "confirm",
+          }
+        );
       }
       const newTabName = newtabinput.value;
       newtabinput.value = null;
@@ -1468,41 +1476,19 @@ export default defineComponent({
             lineList: resData.lineList,
             index: resData.index,
           };
-          // dataReload(res.data.list);
           dataReload(data);
-          // console.log("data", data);
-          // setEmptyFlow();
-          // dataReloadA();
           console.log("111");
         })
         .catch((e) => {
           console.log(e);
         });
-      // console.log("changeTagReload", item);
     }
-    // function switchTabs(activeName, oldActiveName) {
-    //   for (let v of editableTabs.value) {
-    //     if (v.name == oldActiveName && v.isSave == false) {
-    //       changeTagReload(activeName);
 
-    //       ElMessageBox.confirm("未保存流程，是否保存？")
-    //         .then(() => {
-    //           console.log("List", list);
-    //           save(oldActiveName, list);
-    //         })
-    //         .catch(() => {
-    //           editableTabsValue.value = activeName;
-    //         });
-
-    //       return true;
-    //     }
-    //   }
-    // }
     async function switchTabs(activeName, oldActiveName) {
       for (let v of editableTabs.value) {
         if (v.name == oldActiveName && v.isSave == false) {
           allJsPlumb.jsPlumb.deleteEveryConnection();
-          ElMessageBox.confirm("未保存流程，是否保存？")
+          ElMessageBox.confirm(panel_txt.value.alertTxt.saveTab)
             .then(() => {
               console.log("List", list);
               save(oldActiveName, list);
@@ -1779,7 +1765,7 @@ export default defineComponent({
         allJsPlumb.jsPlumb.bind("click", function (conn) {
           console.log("click", conn);
 
-          ElMessageBox.alert("确定删除所点击的线吗?", "提示", {
+          ElMessageBox.alert(panel_txt.value.alertTxt.deleteLine, {
             confirmButtonText: "确定",
             cancelButtonText: "取消",
             type: "warning",
@@ -1838,24 +1824,25 @@ export default defineComponent({
           //     PaintStyle: { stroke: "pink", strokeWidth: 2 },
           //   });
           // }
+          let text = panel_txt.value.alertTxt.connectError;
           if (from === to) {
-            ElMessage.error("不能连接自己");
+            ElMessage.error(text.self);
             return false;
           } else if (hasLine(from, to)) {
-            ElMessage.error("不能重复连线");
+            ElMessage.error(text.repeat);
             return false;
           } else if (hashOppositeLine(from, to)) {
-            ElMessage.error("不能回环哦");
+            ElMessage.error(text.circle);
             return false;
           } else if (hasProblem(from, to)) {
-            ElMessage.error("不满足逻辑");
+            ElMessage.error(text.control);
             return false;
           } else if (limitDataTable(from, to)) {
-            ElMessage.error("Data Table和矩阵只能被一个其他节点连接");
+            ElMessage.error(text.limitMat);
             return false;
           } else {
             ElMessage({
-              message: "连接成功",
+              message: text.success,
               type: "success",
             });
             if (isMAT(from, to)) {
@@ -2082,9 +2069,9 @@ export default defineComponent({
     //删除节点
     function deleteNode(Node) {
       ChangeTag();
-      ElMessageBox("确定要删除节点" + Node.id + "?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      ElMessageBox(panel_txt.value.alertTxt.deleteNode + Node.id + "?", {
+        confirmButtonText: "confirm",
+        cancelButtonText: "cancel",
         type: "warning",
         closeOnClickModal: false,
       })
@@ -2440,13 +2427,7 @@ export default defineComponent({
     }
     //关闭时的提示
     const handleClose = (done) => {
-      ElMessageBox.confirm("确认关闭？")
-        .then(() => {
-          done();
-        })
-        .catch(() => {
-          // catch
-        });
+      done();
     };
     // 点击添加console
     function addConsole() {
@@ -2504,6 +2485,7 @@ export default defineComponent({
       fromCaddTab,
       panel_txt,
       Calendar,
+      addinput,
     };
   },
 });

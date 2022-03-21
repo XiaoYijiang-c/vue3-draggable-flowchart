@@ -1,7 +1,11 @@
 var English = {
     status: false,
     consoles: {
-        copy: "copy"
+        copy: "copy",
+        consoleTabName: "Console",
+        outsave: "open Outsave",
+        predict: "open Predict",
+        umap: "open umap"
     },
     node: {},
     panel: {
@@ -67,12 +71,42 @@ var English = {
             predict: {
                 title: "predict",
                 file_upload: "upload"
+            },
+            color: {
+                title: "layerUMAP",
+                isgrid: "isgrid",
+                grid_n_neighbors: "grid_n_neighbors",
+                grid_min_dist: "grid_min_dist",
+                n_neighbors: "n_neighbors",
+                min_dist: "min_dist",
+                figWidth: "figWidth",
+                figHeight: "figHeight",
+                metric: "metric",
+                istheme: "istheme",
+                layerIndexHas: "layerIndexHas",
+                layerIndex: "layerIndex",
+                theme: "theme",
+                color_key_cmap: "color_key_cmap",
+                background: "background",
+                dimensionReduceMethod: "dimension",
             }
         },
         alertTxt: {
             layer: "canno found layer",
-            layer_: "多个layer"
-
+            layer_: "多个layer",
+            addTabTitle: "错误",
+            addTab: "未输入新tab name",
+            saveTab: "未保存流程，是否保存？",
+            deleteLine: "确定删除所点击的线吗?",
+            deleteNode: "确定要删除节点",
+            connectError: {
+                self: "self",
+                repeat: "repeat",
+                circle: "不能回环",
+                control: "不满足逻辑",
+                limitMat: "Data Table和矩阵只能被一个其他节点连接",
+                success: "连接成功"
+            }
         }
     },
     tool: {

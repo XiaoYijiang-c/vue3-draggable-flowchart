@@ -15,7 +15,9 @@
   >
     <div class="flow-node-header">
       <!--左上角的那个图标样式-->
-      <el-icon size="20"><rank :class="nodeClass" /></el-icon>
+
+      <i class="el-icon-link flow-node-drag"></i>
+
       <!--鼠标移入到节点中时右上角的【编辑】、【删除】 按钮-->
       <div
         style="position: absolute; top: 0px; right: 0px; line-height: 25px"
@@ -36,11 +38,11 @@
 </template>
 <script>
 import { defineComponent, ref, computed, reactive } from "vue";
-import { Rank } from "@element-plus/icons";
+// import { CirclePlusFilled } from "@element-plus/icons";
 export default defineComponent({
   name: "node",
   props: { node: Object },
-  components: { Rank },
+  components: {},
   setup(props, context) {
     const flowNodeContainer1 = reactive({
       position: "absolute",
