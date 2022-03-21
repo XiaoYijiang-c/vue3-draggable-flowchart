@@ -15,7 +15,7 @@
   >
     <div class="flow-node-header">
       <!--左上角的那个图标样式-->
-      <i :class="nodeClass"></i>
+      <el-icon size="20"><rank :class="nodeClass" /></el-icon>
       <!--鼠标移入到节点中时右上角的【编辑】、【删除】 按钮-->
       <div
         style="position: absolute; top: 0px; right: 0px; line-height: 25px"
@@ -36,9 +36,11 @@
 </template>
 <script>
 import { defineComponent, ref, computed, reactive } from "vue";
+import { Rank } from "@element-plus/icons";
 export default defineComponent({
   name: "node",
   props: { node: Object },
+  components: { Rank },
   setup(props, context) {
     const flowNodeContainer1 = reactive({
       position: "absolute",
@@ -51,7 +53,7 @@ export default defineComponent({
 
     const nodeClass = computed(() => {
       var nodeclass = {};
-      nodeclass[props.node.ico] = true;
+      // nodeclass[props.node.ico] = true;
       nodeclass["flow-node-drag"] = true;
       return nodeclass;
     });

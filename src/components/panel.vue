@@ -10,37 +10,35 @@
           <el-col :span="24">
             <div style="margin-bottom: 5px; margin-left: 10px">
               <span><el-link type="primary">{{ list.name }}</el-link>
-              <el-button type="info" icon="el-icon-document" @click="uploadFlow"
+              <el-button type="primary" icon="el-icon-document" @click="uploadFlow"
                 >{{panel_txt.top_meun.upload}}</el-button
               >
-              <el-button type="info" icon="el-icon-document" @click="uploadLayer"
+              <el-button type="primary" icon="el-icon-document" @click="uploadLayer"
                 >{{panel_txt.top_meun.upload_layer}}</el-button
               >
-              <el-button type="info" icon="el-icon-document" @click="predict"
+              <el-button type="primary" icon="el-icon-document" @click="predict"
                 >{{panel_txt.top_meun.predict}}</el-button
               >
               
               <el-button
-                type="primary"
+                type="info"
                 @click="dataReloadB"
-                icon="el-icon-refresh"
                 >{{panel_txt.top_meun.clear}}</el-button
               >
               <el-button
                 type="success"
-                icon="el-icon-refresh"
                 @click="addConsole"
                 >{{panel_txt.top_meun.add_console}}</el-button
               >
               <el-button type="info" @click="openAddtab">
                 {{panel_txt.top_meun.add_tab}}
               </el-button>
-              <el-button type="success" @click="save(editableTabsValue,list)">
+              <el-button type="info" @click="save(editableTabsValue,list)">
                 {{panel_txt.top_meun.save}}
               </el-button></span>
               <span style="float:right;"><el-button type="success" @click="switchLan">
                 {{panel_txt.top_meun.switch_lan}}
-              </el-button><el-button type="success" @click="deleteMeun(editableTabsValue)" :disabled="!editableTabsValue">
+              </el-button><el-button type="danger" @click="deleteMeun(editableTabsValue)" :disabled="!editableTabsValue">
                 {{panel_txt.top_meun.delete_tab}}
               </el-button></span>
             </div>
@@ -2225,6 +2223,7 @@ export default defineComponent({
     function dataReloadB() {
       // 每次添加新的ref前都要置空
       itemRefs.value = [];
+      allJsPlumb.jsPlumb.deleteEveryConnection();
       dataReload(getDataB());
     }
     function changeNodeName(window) {

@@ -1,10 +1,12 @@
 <template>
   <div ref="tool" class="tool">
-    <div>
+    <el-scrollbar>
       <el-menu :default-openeds="dataBase.defaultOpeneds">
         <el-submenu :index="dataBase.menuList[0].type + 1">
           <template #title>
-            <i :class="dataBase.menuList[0].ico"></i>
+            <el-icon class="icon" :size="size" :color="color">
+              <folder></folder>
+            </el-icon>
             <span>{{ txt.f_name.upload_file }}</span>
           </template>
           <el-menu-item-group>
@@ -22,16 +24,24 @@
                   :type="element.type"
                 >
                   <div v-show="element.type == 'txt'">
-                    <i :class="element.ico"></i>{{ txt.c_name.txt }}
+                    <el-icon class="icon" :size="size" :color="color">
+                      <files></files> </el-icon
+                    >{{ txt.c_name.txt }}
                   </div>
                   <div v-show="element.type == 'csv'">
-                    <i :class="element.ico"></i>{{ txt.c_name.csv }}
+                    <el-icon class="icon" :size="size" :color="color">
+                      <files></files> </el-icon
+                    >{{ txt.c_name.csv }}
                   </div>
                   <div v-show="element.type == 'zdy'">
-                    <i :class="element.ico"></i>{{ txt.c_name.zdy }}
+                    <el-icon class="icon" :size="size" :color="color">
+                      <document></document> </el-icon
+                    >{{ txt.c_name.zdy }}
                   </div>
                   <div v-show="element.type == 'predict'">
-                    <i :class="element.ico"></i>{{ txt.c_name.predict }}
+                    <el-icon class="icon" :size="size" :color="color">
+                      <files></files> </el-icon
+                    >{{ txt.c_name.predict }}
                   </div>
                 </el-menu-item>
               </template>
@@ -40,7 +50,9 @@
         </el-submenu>
         <el-submenu :index="dataBase.menuList[1].type + 2">
           <template #title>
-            <i :class="dataBase.menuList[1].ico"></i>
+            <el-icon class="icon" :size="size" :color="color">
+              <refresh></refresh>
+            </el-icon>
             <span>{{ txt.f_name.data_change }}</span>
           </template>
           <el-menu-item-group>
@@ -58,22 +70,34 @@
                   :type="element.type"
                 >
                   <div v-show="element.type == 'list'">
-                    <i :class="element.ico"></i>{{ txt.c_name.list }}
+                    <el-icon class="icon" :size="size" :color="color"
+                      ><caret-right /></el-icon
+                    >{{ txt.c_name.list }}
                   </div>
                   <div v-show="element.type == 'mat'">
-                    <i :class="element.ico"></i>{{ txt.c_name.mat }}
+                    <el-icon class="icon" :size="size" :color="color">
+                      <grid></grid> </el-icon
+                    >{{ txt.c_name.mat }}
                   </div>
                   <div v-show="element.type == 'tag'">
-                    <i :class="element.ico"></i>{{ txt.c_name.tag }}
+                    <el-icon class="icon" :size="size" :color="color"
+                      ><collection-tag /></el-icon
+                    >{{ txt.c_name.tag }}
                   </div>
                   <div v-show="element.type == 'train'">
-                    <i :class="element.ico"></i>{{ txt.c_name.train }}
+                    <el-icon class="icon" :size="size" :color="color"
+                      ><cpu /></el-icon
+                    >{{ txt.c_name.train }}
                   </div>
                   <div v-show="element.type == 'test'">
-                    <i :class="element.ico"></i>{{ txt.c_name.test }}
+                    <el-icon class="icon" :size="size" :color="color"
+                      ><cloudy /></el-icon
+                    >{{ txt.c_name.test }}
                   </div>
                   <div v-show="element.type == 'color'">
-                    <i :class="element.ico"></i>{{ txt.c_name.color }}
+                    <el-icon class="icon" :size="size" :color="color"
+                      ><data-line /></el-icon
+                    >{{ txt.c_name.color }}
                   </div>
                 </el-menu-item>
               </template>
@@ -82,7 +106,7 @@
         </el-submenu>
         <el-submenu :index="dataBase.menuList[2].type + 3">
           <template #title>
-            <i :class="dataBase.menuList[2].ico"></i>
+            <el-icon class="icon" :size="size" :color="color"><Menu /></el-icon>
             <span>{{ txt.f_name.mat_build }}</span>
           </template>
           <el-menu-item-group>
@@ -100,16 +124,22 @@
                   :type="element.type"
                 >
                   <div v-show="element.type == 'col'">
-                    <i :class="element.ico"></i>{{ txt.c_name.col }}
+                    <el-icon class="icon" :size="size" :color="color"
+                      ><Switch></Switch></el-icon
+                    >{{ txt.c_name.col }}
                   </div>
                   <div v-show="element.type == 'row'">
-                    <i :class="element.ico"></i>{{ txt.c_name.row }}
+                    <el-icon class="icon" :size="size" :color="color"
+                      ><sort /></el-icon
+                    >{{ txt.c_name.row }}
                   </div>
                 </el-menu-item>
               </template>
             </draggable>
           </el-menu-item-group>
         </el-submenu>
+      </el-menu>
+      <el-menu>
         <el-submenu
           v-for="(menu, index) in tabsList.menuList"
           :index="menu.type + index + 3"
@@ -129,7 +159,7 @@
           >
         </el-submenu>
       </el-menu>
-    </div>
+    </el-scrollbar>
   </div>
 </template>
 <script>
@@ -139,10 +169,38 @@ import { ElMessageBox } from "element-plus";
 import axios from "axios";
 import { get_chinese } from "./js/Chinese";
 import { get_English } from "./js/English";
+import {
+  Folder,
+  Files,
+  Document,
+  Refresh,
+  Grid,
+  CollectionTag,
+  DataLine,
+  Cpu,
+  Cloudy,
+  Menu,
+  Sort,
+  Switch,
+  CaretRight,
+} from "@element-plus/icons";
 export default defineComponent({
   name: "tool",
   components: {
     draggable,
+    Folder,
+    Files,
+    Document,
+    Refresh,
+    Grid,
+    CollectionTag,
+    DataLine,
+    Cpu,
+    Cloudy,
+    Menu,
+    Sort,
+    Switch,
+    CaretRight,
   },
   setup(props, context) {
     let urls = "http://182.92.194.235:8000/users/register";
@@ -372,6 +430,7 @@ export default defineComponent({
         });
     }
     return {
+      size: 15,
       txt,
       child,
       addTabs,
@@ -390,6 +449,9 @@ export default defineComponent({
 });
 </script>
 <style>
+.icon {
+  margin-right: 5px;
+}
 .tool {
   height: 700px;
   overflow-y: auto;
