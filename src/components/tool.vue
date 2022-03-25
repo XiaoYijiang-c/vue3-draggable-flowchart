@@ -447,7 +447,7 @@ export default defineComponent({
   margin-right: 5px;
 }
 .tool {
-  height: 700px;
+  height: 42rem;
   overflow-y: auto;
   overflow-x: hidden;
   /* position: relative; */

@@ -1,15 +1,12 @@
 <template>
   <!-- 主组件 -->
   <div v-if="easyFlowVisible">
-    <el-row>
-      <el-col :span="3" >
-        <flowTool @addNode="addNode" ref="flowTool" @fromCaddTab="fromCaddTab" @removeTab="removeTab"></flowTool>
-      </el-col>
-      <el-col :span="21">
-        <el-row :span="3">
+    <el-row :span="3">
           <el-col :span="24">
-            <div style="margin-bottom: 5px; margin-left: 10px">
-              <span><el-link type="primary">{{ list.name }}</el-link>
+            <el-row>
+              <el-col :span="3"><a href="https://github.com/jingry/autoBioSeqpy" target="_blank"><img  src="./logo.jpg" style="width: 95%;" /></a></el-col>
+            <el-col :span="21"><div style="margin-left: 1px">
+              <span>
               <el-button type="primary" icon="el-icon-document" @click="uploadFlow"
                 >{{panel_txt.top_meun.upload}}</el-button
               >
@@ -21,31 +18,35 @@
               >
               
               <el-button
-                type="info"
                 @click="dataReloadB"
                 >{{panel_txt.top_meun.clear}}</el-button
               >
               <el-button
-                type="success"
                 @click="addConsole"
                 >{{panel_txt.top_meun.add_console}}</el-button
               >
-              <el-button type="info" @click="openAddtab">
+              <el-button @click="openAddtab">
                 {{panel_txt.top_meun.add_tab}}
               </el-button>
-              <el-button type="info" @click="save(editableTabsValue,list)">
+              <el-button @click="save(editableTabsValue,list)">
                 {{panel_txt.top_meun.save}}
               </el-button></span>
-              <span style="float:right;"><el-button type="success" @click="switchLan">
+              <span style="float:right;"><el-button  @click="switchLan">
                 {{panel_txt.top_meun.switch_lan}}
               </el-button><el-button type="danger" @click="deleteMeun(editableTabsValue)" :disabled="!editableTabsValue">
                 {{panel_txt.top_meun.delete_tab}}
               </el-button></span>
-            </div>
+            </div></el-col>
+            </el-row>
           </el-col>
-          
         </el-row>
-        <el-row :span="21">
+    <el-row :span="21">
+      <el-col :span="3" >
+        <flowTool style="margin-top:5px" @addNode="addNode" ref="flowTool" @fromCaddTab="fromCaddTab" @removeTab="removeTab"></flowTool>
+      </el-col>
+      <el-col :span="21">
+        
+        <el-row :span="24">
           <el-col :span="24">
             <!--画布-->
             <el-tabs
@@ -53,7 +54,6 @@
               type="card"
               class="demo-tabs"
               closable
-              
               @tab-remove="removeTab"
               :before-leave="switchTabs"
               ref="Tabs"
@@ -2007,6 +2007,9 @@ export default defineComponent({
         let nodeId = "node" + index;
         let left = evt.originalEvent.clientX;
         let top = evt.originalEvent.clientY;
+        if (left <= 200 || top <= 100) {
+          return;
+        }
         //居中
         left -= 300;
         top -= 120;
@@ -2504,7 +2507,7 @@ p {
   background-size: 10px 10px;
   /* height: 900px; */
   background-color: rgb(251, 251, 251);
-  height: 600px;
+  height: 40rem;
   /*background-color: #42b983;*/
   position: relative;
 }
