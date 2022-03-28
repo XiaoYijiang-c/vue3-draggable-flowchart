@@ -62,7 +62,7 @@
       class="consolePanel"
       v-for="cons in consoleSet.consoleList"
       :key="cons.id"
-      @click="test"
+      @click="closeNotif"
     >
       <div
         v-show="cons.table"
@@ -129,11 +129,16 @@ export default defineComponent({
     });
     console.log(consoleSet.consoleList[0]);
     let console_update = null;
-    function test() {
+    function closeNotif() {
       console.log("console");
-      Notif.outsave.close();
-      Notif.predict.close();
-      Notif.umap.close();
+      detForeach(Notif.outsave);
+      detForeach(Notif.predict);
+      detForeach(Notif.umap);
+    }
+    function detForeach(list) {
+      list.forEach((item) => {
+        item.close();
+      });
     }
     watch([flagTable, flagID], (newVal, oldVal) => {
       console.log("11111", newVal, oldVal);
@@ -221,35 +226,24 @@ export default defineComponent({
       }
     });
     let Notif = reactive({
-      outsave: undefined,
-      predict: undefined,
-      umap: undefined,
+      outsave: [],
+      predict: [],
+      umap: [],
     });
     function open(data, type) {
+      let notification = ElNotification({
+        title: type,
+        dangerouslyUseHTMLString: true,
+        message: "<ul>" + data + "</ul>",
+        position: "bottom-right",
+        duration: 0,
+      });
       if (type == "Outsave") {
-        Notif.outsave = ElNotification({
-          title: type,
-          dangerouslyUseHTMLString: true,
-          message: "<ul>" + data + "</ul>",
-          position: "bottom-right",
-          duration: 0,
-        });
+        Notif.outsave.push(notification);
       } else if (type == "Predict") {
-        Notif.predict = ElNotification({
-          title: type,
-          dangerouslyUseHTMLString: true,
-          message: "<ul>" + data + "</ul>",
-          position: "bottom-right",
-          duration: 0,
-        });
+        Notif.predict.push(notification);
       } else if (type == "umap") {
-        Notif.umap = ElNotification({
-          title: type,
-          dangerouslyUseHTMLString: true,
-          message: "<ul>" + data + "</ul>",
-          position: "bottom-right",
-          duration: 0,
-        });
+        Notif.umap.push(notification);
       }
     }
     function copyConsole() {
@@ -311,26 +305,28 @@ export default defineComponent({
       }
     }
     function showConsole(cons) {
-      let list = consoleSet.consoleList;
-      for (let cnt = 0; cnt < list.length; cnt++) {
-        if (list[cnt].id == cons.id) {
-          if (list[cnt].table == true) {
+      if (table.value) {
+        let list = consoleSet.consoleList;
+        for (let cnt = 0; cnt < list.length; cnt++) {
+          if (list[cnt].id == cons.id) {
+            if (list[cnt].table == true) {
+              list[cnt].table = false;
+              list[cnt].color = "black";
+              flagTable.value = false;
+            } else {
+              list[cnt].table = true;
+              list[cnt].color = "#409EFF";
+              flagTable.value = true;
+            }
+          } else {
             list[cnt].table = false;
             list[cnt].color = "black";
-            flagTable.value = false;
-          } else {
-            list[cnt].table = true;
-            list[cnt].color = "#409EFF";
-            flagTable.value = true;
           }
-        } else {
-          list[cnt].table = false;
-          list[cnt].color = "black";
         }
-      }
-      flagID.value = cons.id;
-      if (cons.table && lastH.value == 0) {
-        lastH.value += 50;
+        flagID.value = cons.id;
+        if (cons.table && lastH.value == 0) {
+          lastH.value += 50;
+        }
       }
     }
     function addConsoleList() {
@@ -378,7 +374,7 @@ export default defineComponent({
       bigSize: 20,
       txt,
       notif,
-      test,
+      closeNotif,
       switch_status,
       open,
       mouseDown,

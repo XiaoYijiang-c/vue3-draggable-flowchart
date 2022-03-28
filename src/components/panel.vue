@@ -1408,10 +1408,6 @@ export default defineComponent({
       }
       if (flag) {
         if (editableTabs.value.length == 0) {
-          // editableTabsValue.value = name;
-          // consoleVisiable.value = true;
-          // changeTagReload(editableTabsValue.value);
-          // editableTabsValue.value = null;
           switchTabs(name, null);
         }
         editableTabs.value.push(
@@ -1476,18 +1472,22 @@ export default defineComponent({
             lineList: resData.lineList,
             index: resData.index,
           };
+          console.log("111", data);
           dataReload(data);
-          console.log("111");
         })
         .catch((e) => {
           console.log(e);
         });
     }
 
-    async function switchTabs(activeName, oldActiveName) {
+    function switchTabs(activeName, oldActiveName) {
+      if (oldActiveName == "0") {
+        return 0;
+      }
+      console.log("activeName, oldActiveName", activeName, oldActiveName);
       for (let v of editableTabs.value) {
         if (v.name == oldActiveName && v.isSave == false) {
-          allJsPlumb.jsPlumb.deleteEveryConnection();
+          // allJsPlumb.jsPlumb.deleteEveryConnection();
           ElMessageBox.confirm(panel_txt.value.alertTxt.saveTab)
             .then(() => {
               console.log("List", list);
@@ -1510,10 +1510,15 @@ export default defineComponent({
       // setEmptyFlow();
       if (activeName && oldActiveName == null) {
         if (editableTabs.value.length != 1) {
+          console.log("editableTabs.value.length != 1", list);
           editableTabsValue.value = activeName;
           changeTagReload(activeName);
         } else if (editableTabs.value.length == 1 && !consoleVisiable.value) {
           editableTabsValue.value = activeName;
+          console.log(
+            "editableTabs.value.length  == 1 && !consoleVisiable.value"
+          );
+
           changeTagReload(activeName);
         }
         consoleVisiable.value = true;
@@ -1652,9 +1657,6 @@ export default defineComponent({
           );
         }
       }
-      nextTick(() => {
-        allJsPlumb.loadEasyFlowFinish = true;
-      });
     }
     //删除线
     function deleteLine(from, to) {
@@ -1764,17 +1766,19 @@ export default defineComponent({
         // 单点击了连接线,
         allJsPlumb.jsPlumb.bind("click", function (conn) {
           console.log("click", conn);
+          // await ElMessageBox.alert(panel_txt.value.alertTxt.deleteLine, {
+          //   confirmButtonText: "确定",
+          //   cancelButtonText: "取消",
+          //   type: "warning",
+          // })
+          //   .then(() => {
+          //     flag = true;
+          //   })
+          //   .catch(() => {});
 
-          ElMessageBox.alert(panel_txt.value.alertTxt.deleteLine, {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            type: "warning",
-          })
-            .then(() => {
-              allJsPlumb.jsPlumb.deleteConnection(conn);
-            })
-            .catch(() => {});
+          allJsPlumb.jsPlumb.deleteConnection(conn);
         });
+
         // 连线
         // 定义新样式
         // let setting = {
@@ -2185,7 +2189,7 @@ export default defineComponent({
         data = lodash.cloneDeep(data);
         // easyFlowVisible.value = true;
         console.log("data", data);
-        console.log("list", list);
+
         // list = data;
         /*
          原先的list = data list是reactive类型 而data是对象
@@ -2196,11 +2200,10 @@ export default defineComponent({
         list.nodeList = data.nodeList;
         list.windowList = data.windowList;
         list.index = data.index;
+        console.log("list", list);
         nextTick(() => {
           allJsPlumb.jsPlumb = jsPlumb.getInstance();
-          nextTick(() => {
-            jsPlumbInit();
-          });
+          jsPlumbInit();
         });
       });
     }
@@ -2213,7 +2216,7 @@ export default defineComponent({
     function dataReloadB() {
       // 每次添加新的ref前都要置空
       itemRefs.value = [];
-      allJsPlumb.jsPlumb.deleteEveryConnection();
+      // allJsPlumb.jsPlumb.deleteEveryConnection();
       dataReload(getDataB());
     }
     function changeNodeName(window) {

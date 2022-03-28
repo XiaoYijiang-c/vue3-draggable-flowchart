@@ -17,7 +17,6 @@
       <!--左上角的那个图标样式-->
 
       <i class="el-icon-link flow-node-drag"></i>
-
       <!--鼠标移入到节点中时右上角的【编辑】、【删除】 按钮-->
       <div
         style="position: absolute; top: 0px; right: 0px; line-height: 25px"
